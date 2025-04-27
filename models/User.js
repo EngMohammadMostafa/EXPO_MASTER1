@@ -14,10 +14,11 @@ const User = sequelize.define('User', {
   password: {
     type: DataTypes.STRING
   },
-  // socialId: {
-  //   type: DataTypes.STRING,
-  //   allowNull: true
-  // }
+  userType: {
+    type: DataTypes.INTEGER, // 1: زائر، 2: عارض، 3: مدير قسم، 4: مدير معرض
+    allowNull: false,
+    defaultValue: 1 // الزائر كخيار افتراضي
+  }
 });
 
 module.exports = User;

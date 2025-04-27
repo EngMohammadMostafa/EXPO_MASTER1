@@ -3,8 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 //                                   register 
+
 exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, userType } = req.body;
 
   try {
     const existingUser = await User.findOne({ where: { email } });
@@ -16,6 +17,7 @@ exports.register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      userType // نمرر النوع
     });
 
     res.status(201).json({ message: "User registered successfully", user: newUser });
@@ -23,6 +25,28 @@ exports.register = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// exports.register = async (req, res) => {
+//   const { name, email, password } = req.body;
+
+//   try {
+//     const existingUser = await User.findOne({ where: { email } });
+//     if (existingUser) return res.status(400).json({ message: "Email already exists" });
+
+//     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+
+//     const newUser = await User.create({
+//       name,
+//       email,
+//       password: hashedPassword,
+//     });
+
+//     res.status(201).json({ message: "User registered successfully", user: newUser });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
 
 //                                    log in   
 
@@ -42,14 +66,21 @@ exports.login = async (req, res) => {
         expiresIn: "1d"
       });
   
-      res.status(200).json({ message: "Login successful", token });
+     // res.status(200).json({ message: "Login successful", token });
+
+      res.status(200).json({
+        message: "Login successful",
+        token,
+        userType: user.userType, // حتى نتحكم بالفرونت
+      });
+      
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   };
 
 //                            forgot password 
-  
+
 exports.forgotPassword = async (req, res) => {
     const { email } = req.body;
   
@@ -74,7 +105,7 @@ exports.forgotPassword = async (req, res) => {
     }
   };
   
-//                              reset password 
+ //                              reset password 
 
   exports.resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
