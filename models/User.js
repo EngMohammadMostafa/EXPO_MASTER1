@@ -15,9 +15,9 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING
   },
   userType: {
-    type: DataTypes.INTEGER, // 1: زائر، 2: عارض، 3: مدير قسم، 4: مدير معرض
+    type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: 1 // الزائر كخيار افتراضي
+    defaultValue: 1 
   }
 });
 
