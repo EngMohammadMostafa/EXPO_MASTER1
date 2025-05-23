@@ -2,7 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-exports.register = async (req, res) => {
+ exports.register = async (req, res) => {
   const { name, email, password, userType } = req.body;
 
   try {
@@ -18,21 +18,21 @@ exports.register = async (req, res) => {
       userType
     });
 
-    if (userType === 3) {
+     if (userType === 3) {
       return res.status(201).json({
         message: "تم إنشاء مدير القسم بنجاح.",
         managerId: newUser.id
       });
     }
 
-    res.status(201).json({ message: "User registered successfully", user: newUser });
+     res.status(201).json({ message: "User registered successfully", user: newUser });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-exports.login = async (req, res) => {
+ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -56,4 +56,3 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
