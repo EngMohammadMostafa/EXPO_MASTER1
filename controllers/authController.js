@@ -2,8 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// تسجيل مستخدم (يُستخدم لحالات عامة فقط)
-exports.register = async (req, res) => {
+ exports.register = async (req, res) => {
   const { name, email, password, userType } = req.body;
 
   try {
@@ -19,24 +18,21 @@ exports.register = async (req, res) => {
       userType
     });
 
-    // إذا كان نوع المستخدم مدير قسم، رجّع فقط الـ ID مع رسالة خاصة
-    if (userType === 3) {
+     if (userType === 3) {
       return res.status(201).json({
         message: "تم إنشاء مدير القسم بنجاح.",
         managerId: newUser.id
       });
     }
 
-    // باقي المستخدمين – يرجع معلوماتهم بشكل طبيعي
-    res.status(201).json({ message: "User registered successfully", user: newUser });
+     res.status(201).json({ message: "User registered successfully", user: newUser });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// تسجيل الدخول
-exports.login = async (req, res) => {
+ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -61,55 +57,44 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
 
-// const User = require('../models/User');
-// const bcrypt = require('bcryptjs');
-// const jwt = require('jsonwebtoken');
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ message: "البريد الإلكتروني غير مسجل" });
 
-// exports.register = async (req, res) => {
-//   const { name, email, password, userType } = req.body;
+    res.status(200).json({
+      message: "البريد الإلكتروني موجود ويمكن إعادة تعيين كلمة المرور",
+      email: user.email  
+    });
 
-//   try {
-//     const existingUser = await User.findOne({ where: { email } });
-//     if (existingUser) return res.status(400).json({ message: "Email already exists" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
-//     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
-
-//     const newUser = await User.create({
-//       name,
-//       email,
-//       password: hashedPassword,
-//       userType 
-//     });
-
-//     res.status(201).json({ message: "User registered successfully", user: newUser });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
  
-// exports.login = async (req, res) => {
-//     const { email, password } = req.body;
-  
-//     try {
-//       const user = await User.findOne({ where: { email } });
-//       if (!user) return res.status(404).json({ message: "User not found" });
-  
-      
-//       const isMatch = await bcrypt.compare(password, user.password);
-//       if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
-  
-//       const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-//         expiresIn: "1d"
-//       });
+exports.resetPassword = async (req, res) => {
+  const { email, newPassword, confirmPassword } = req.body;
 
-//       res.status(200).json({
-//         message: "Login successful",
-//         token,
-//         userType: user.userType, 
-//       });
-      
-//     } catch (err) {
-//       res.status(500).json({ error: err.message });
-//     }
-//   };
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ message: "البريد الإلكتروني غير مسجل" });
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: "كلمتا المرور غير متطابقتين" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.status(200).json({ message: "تم تغيير كلمة المرور بنجاح" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
