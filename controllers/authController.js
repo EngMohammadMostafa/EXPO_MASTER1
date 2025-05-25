@@ -56,3 +56,44 @@ const jwt = require('jsonwebtoken');
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ message: "البريد الإلكتروني غير مسجل" });
+
+    res.status(200).json({
+      message: "البريد الإلكتروني موجود ويمكن إعادة تعيين كلمة المرور",
+      email: user.email  
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+ 
+exports.resetPassword = async (req, res) => {
+  const { email, newPassword, confirmPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ message: "البريد الإلكتروني غير مسجل" });
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: "كلمتا المرور غير متطابقتين" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.status(200).json({ message: "تم تغيير كلمة المرور بنجاح" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
