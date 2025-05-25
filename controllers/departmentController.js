@@ -19,6 +19,17 @@ exports.createDepartment = async (req, res) => {
   }
 };
 
+// exports.getDepartmentById = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const department = await Department.findByPk(id);
+//     if (!department) return res.status(404).json({ message: "Department not found" });
+
+//     res.status(200).json({ department });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
  
 exports.updateDepartment = async (req, res) => {
   try {
