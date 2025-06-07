@@ -23,6 +23,10 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  paymentStatus: {
+  type: DataTypes.STRING,
+  defaultValue: 'unpaid' // أو 'paid'
+},
   notes: {
     type: DataTypes.TEXT
   }
