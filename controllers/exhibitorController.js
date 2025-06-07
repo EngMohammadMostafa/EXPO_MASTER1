@@ -43,3 +43,23 @@ exports.payInitial = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.trackRequest = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const request = await ExhibitorRequest.findOne({ where: { userId } });
+    if (!request) {
+      return res.status(404).json({ message: "لا يوجد طلب خاص بك" });
+    }
+
+    res.status(200).json({
+      status: request.status,
+      paymentStatus: request.paymentStatus,
+      notes: request.notes
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
