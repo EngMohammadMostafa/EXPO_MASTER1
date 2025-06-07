@@ -22,3 +22,24 @@ exports.createRequest = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.payInitial = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const request = await ExhibitorRequest.findOne({ where: { userId } });
+    if (!request) {
+      return res.status(404).json({ message: "لم يتم العثور على طلب للمستخدم" });
+    }
+
+    request.paymentStatus = 'paid';
+    request.status = 'waiting-approval';
+
+    await request.save();
+
+    res.status(200).json({ message: "تم دفع المبلغ المبدئي بنجاح. الطلب قيد الموافقة." });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
