@@ -15,20 +15,28 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  status: {
-    type: DataTypes.STRING,
-    defaultValue: 'pending' // أو values مثل: pending / approved / rejected
-  },
   contactPhone: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  paymentStatus: {
-  type: DataTypes.STRING,
-  defaultValue: 'unpaid' // أو 'paid'
-},
   notes: {
     type: DataTypes.TEXT
+  },
+  status: {
+    type: DataTypes.ENUM('pending', 'waiting-approval', 'approved', 'rejected'),
+    defaultValue: 'pending'
+  },
+  paymentStatus: {
+    type: DataTypes.ENUM('unpaid', 'paid'),
+    defaultValue: 'unpaid'
+  },
+  finalPaymentStatus: {
+    type: DataTypes.ENUM('unpaid', 'paid'),
+    defaultValue: 'unpaid'
+  },
+  wingAssigned: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 });
 
