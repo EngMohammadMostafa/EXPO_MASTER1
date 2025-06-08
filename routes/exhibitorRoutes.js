@@ -3,8 +3,6 @@ const router = express.Router();
 const exhibitorController = require('../controllers/exhibitorController');
 const { verifyExhibitor } = require('../middleware/authMiddleware');
 
-router.post('/track-request', '/pay-initial', verifyExhibitor, exhibitorController.payInitial);
-
 
 // إنشاء طلب
 router.post('/create-request', verifyExhibitor, exhibitorController.createRequest);
