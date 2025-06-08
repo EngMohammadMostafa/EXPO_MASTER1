@@ -63,3 +63,22 @@ exports.trackRequest = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.payFinal = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const request = await ExhibitorRequest.findOne({ where: { userId } });
+
+    if (!request || request.status !== 'approved') {
+      return res.status(400).json({ message: "طلبك لم يُقبل بعد أو غير موجود" });
+    }
+
+    request.finalPaymentStatus = 'paid';
+    await request.save();
+
+    res.status(200).json({ message: "تم دفع الدفعة النهائية بنجاح. سيتم تخصيص الجناح خلال 24 ساعة." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
