@@ -13,3 +13,16 @@ exports.getBoothsByDepartment = async (req, res) => {
     res.status(500).json({ error: 'حدث خطأ أثناء جلب الأجنحة' });
   }
 };
+
+// 2. حذف جناح
+exports.deleteBooth = async (req, res) => {
+  try {
+    const boothId = req.params.id;
+
+    await Booth.destroy({ where: { id: boothId } });
+
+    res.json({ message: 'تم حذف الجناح بنجاح' });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل حذف الجناح' });
+  }
+};
