@@ -74,3 +74,19 @@ exports.createBooth = async (req, res) => {
     res.status(500).json({ error: 'فشل في إنشاء الجناح' });
   }
 };
+
+// 6. عرض تقارير طلبات العارضين حسب القسم
+exports.getExhibitorRequests = async (req, res) => {
+  try {
+    const departmentId = req.user.departmentId;
+
+    const requests = await ExhibitorRequest.findAll({
+      where: { departmentId },
+      include: [{ model: User, attributes: ['fullName', 'email'] }],
+    });
+
+    res.json(requests);
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء جلب الطلبات' });
+  }
+};
