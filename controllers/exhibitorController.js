@@ -121,4 +121,15 @@ exports.addProducts = async (req, res) => {
   }
 };
 
+// ✅ دالة جديدة: عرض منتجات العارض الحالي
+exports.getMyProducts = async (req, res) => {
+  const exhibitorId = req.user.id;
 
+  try {
+    const products = await Product.findAll({ where: { exhibitorId } });
+
+    res.status(200).json({ products });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
