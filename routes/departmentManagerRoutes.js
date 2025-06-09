@@ -14,3 +14,11 @@ router.post('/sections', departmentManagerController.createSection);
 
 // جلب العارضين الذين أتموا الدفع النهائي
 router.get('/confirmed-exhibitors', departmentManagerController.getConfirmedExhibitors);
+
+
+// الطلبات (التقارير)
+router.get('/requests', departmentManagerController.getExhibitorRequests);
+router.put('/requests/accept/:id', departmentManagerController.acceptExhibitorRequest);
+router.put('/requests/reject/:id', departmentManagerController.rejectExhibitorRequest);
+
+module.exports = router;
