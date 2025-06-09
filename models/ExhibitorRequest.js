@@ -1,4 +1,3 @@
-// models/ExhibitorRequest.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
@@ -39,5 +38,13 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
     defaultValue: false
   }
 });
+
+// العلاقة مع المستخدم
+ExhibitorRequest.associate = (models) => {
+  ExhibitorRequest.belongsTo(models.User, {
+    foreignKey: 'userId',
+    as: 'User'
+  });
+};
 
 module.exports = ExhibitorRequest;
