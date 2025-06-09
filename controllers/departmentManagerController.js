@@ -26,3 +26,17 @@ exports.deleteBooth = async (req, res) => {
     res.status(500).json({ error: 'فشل حذف الجناح' });
   }
 };
+
+// 3. تعديل جناح
+exports.updateBooth = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, location } = req.body;
+
+    await Booth.update({ name, location }, { where: { id } });
+
+    res.json({ message: 'تم تعديل الجناح بنجاح' });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل تعديل الجناح' });
+  }
+};
