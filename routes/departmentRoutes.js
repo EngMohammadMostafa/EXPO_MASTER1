@@ -1,14 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
-const { createDepartment,getDepartmentById,updateDepartment, deleteDepartment, getAllDepartments } = require('../controllers/departmentController');
+const {
+  createDepartment,
+  getDepartmentById,
+  updateDepartment,
+  deleteDepartment,
+  getAllDepartments,
+} = require('../controllers/departmentController');
 
-router.get('/', protect, authorize(4), getAllDepartments);
+// ✅ الحماية والتفويض لمدير المدينة فقط
+router.use(protect);
+router.use(authorize(4));
 
-router.post('/', protect, authorize(4), createDepartment);
-router.get('/:id', protect, authorize(4), getDepartmentById);
-router.put('/:id', protect, authorize(4), updateDepartment);
-router.delete('/:id', protect, authorize(4), deleteDepartment);
+router.get('/', getAllDepartments);
+router.post('/', createDepartment);
+router.get('/:id', getDepartmentById);
+router.put('/:id', updateDepartment);
+router.delete('/:id', deleteDepartment);
 
 module.exports = router;
 

@@ -3,26 +3,17 @@ const router = express.Router();
 const exhibitorController = require('../controllers/exhibitorController');
 const { verifyExhibitor } = require('../middleware/authMiddleware');
 
- 
-// إضافة المنتجات
-router.post('/add-products', verifyExhibitor, exhibitorController.addProducts);
+// ✅ الحماية للعارضين فقط
+router.use(verifyExhibitor);
 
-// عرض منتجات العارض
-router.get('/my-products', verifyExhibitor, exhibitorController.getMyProducts);
+// ✅ منتجات العارض
+router.post('/add-products', exhibitorController.addProducts);
+router.get('/my-products', exhibitorController.getMyProducts);
 
-// إنشاء طلب
-router.post('/create-request', verifyExhibitor, exhibitorController.createRequest);
-
-// دفع مبدئي
-router.post('/pay-initial', verifyExhibitor, exhibitorController.payInitial);
-
-// متابعة الطلب
-router.get('/track-request', verifyExhibitor, exhibitorController.trackRequest);
-
-// دفع نهائي
-router.post('/pay-final', verifyExhibitor, exhibitorController.payFinal);
-
-// إضافة المنتجات
-router.post('/add-products', verifyExhibitor, exhibitorController.addProducts);
+// ✅ الطلبات والدفع
+router.post('/create-request', exhibitorController.createRequest);
+router.get('/track-request', exhibitorController.trackRequest);
+router.post('/pay-initial', exhibitorController.payInitial);
+router.post('/pay-final', exhibitorController.payFinal);
 
 module.exports = router;
