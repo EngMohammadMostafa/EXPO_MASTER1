@@ -11,3 +11,6 @@ router.get('/sections', departmentManagerController.getSectionsByDepartment);
 router.delete('/sections/:id', departmentManagerController.deleteSection);
 router.put('/sections/:id', departmentManagerController.updateSection);
 router.post('/sections', departmentManagerController.createSection);
+
+// جلب العارضين الذين أتموا الدفع النهائي
+router.get('/confirmed-exhibitors', departmentManagerController.getConfirmedExhibitors);
