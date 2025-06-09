@@ -117,4 +117,31 @@ exports.acceptExhibitorRequest = async (req, res) => {
     res.status(500).json({ error: 'فشل قبول الطلب' });
   }
 };
- 
+
+// 8. رفض طلب عارض
+exports.rejectExhibitorRequest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const { reason } = req.body;
+
+    const request = await ExhibitorRequest.findByPk(requestId, {
+      include: [{ model: User }],
+    });
+
+    if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
+
+    request.status = 'rejected';
+    await request.save();
+
+    // إرسال إيميل بالرفض
+    await mailService.sendMail({
+      to: request.User.email,
+      subject: 'تم رفض طلبك',
+      text: `نأسف، تم رفض طلبك. السبب: ${reason}`,
+    });
+
+    res.json({ message: 'تم رفض الطلب وإرسال السبب للعارض' });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل رفض الطلب' });
+  }
+};
