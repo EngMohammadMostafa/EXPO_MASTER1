@@ -1,25 +1,25 @@
-const { Booth, ExhibitorRequest, User, Department } = require('../models');
+const { Section, ExhibitorRequest, User, Department } = require('../models');
 const mailService = require('../utils/mailService');
 
-// 1. جلب كل الأجنحة في القسم الخاص بمدير القسم
-exports.getBoothsByDepartment = async (req, res) => {
+// 1. جلب كل الأجنحة (Sections) في القسم الخاص بمدير القسم
+exports.getSectionsByDepartment = async (req, res) => {
   try {
     const departmentId = req.user.departmentId;
 
-    const booths = await Booth.findAll({ where: { departmentId } });
+    const sections = await Section.findAll({ where: { departments_id: departmentId } });
 
-    res.json(booths);
+    res.json(sections);
   } catch (err) {
     res.status(500).json({ error: 'حدث خطأ أثناء جلب الأجنحة' });
   }
 };
 
 // 2. حذف جناح
-exports.deleteBooth = async (req, res) => {
+exports.deleteSection = async (req, res) => {
   try {
-    const boothId = req.params.id;
+    const sectionId = req.params.id;
 
-    await Booth.destroy({ where: { id: boothId } });
+    await Section.destroy({ where: { id: sectionId } });
 
     res.json({ message: 'تم حذف الجناح بنجاح' });
   } catch (err) {
@@ -28,12 +28,12 @@ exports.deleteBooth = async (req, res) => {
 };
 
 // 3. تعديل جناح
-exports.updateBooth = async (req, res) => {
+exports.updateSection = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, location } = req.body;
+    const { name } = req.body;
 
-    await Booth.update({ name, location }, { where: { id } });
+    await Section.update({ name }, { where: { id } });
 
     res.json({ message: 'تم تعديل الجناح بنجاح' });
   } catch (err) {
@@ -62,14 +62,14 @@ exports.getConfirmedExhibitors = async (req, res) => {
 };
 
 // 5. إنشاء جناح جديد لعارض
-exports.createBooth = async (req, res) => {
+exports.createSection = async (req, res) => {
   try {
-    const { exhibitorId, name, location } = req.body;
-    const departmentId = req.user.departmentId;
+    const { exhibitor_id, name } = req.body;
+    const departments_id = req.user.departmentId;
 
-    const booth = await Booth.create({ name, location, exhibitorId, departmentId });
+    const section = await Section.create({ name, exhibitor_id, departments_id });
 
-    res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', booth });
+    res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', section });
   } catch (err) {
     res.status(500).json({ error: 'فشل في إنشاء الجناح' });
   }
