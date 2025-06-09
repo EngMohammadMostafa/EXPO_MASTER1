@@ -40,3 +40,23 @@ exports.updateBooth = async (req, res) => {
     res.status(500).json({ error: 'فشل تعديل الجناح' });
   }
 };
+
+// 4. جلب العارضين الذين أكملوا الدفع النهائي
+exports.getConfirmedExhibitors = async (req, res) => {
+  try {
+    const departmentId = req.user.departmentId;
+
+    const exhibitors = await User.findAll({
+      where: {
+        userType: 2, // العارضين
+        departmentId,
+        isPaymentConfirmed: true,
+      },
+      attributes: ['id', 'fullName', 'email'],
+    });
+
+    res.json(exhibitors);
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء جلب العارضين' });
+  }
+};
