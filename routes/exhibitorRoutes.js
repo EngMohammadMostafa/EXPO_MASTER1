@@ -3,6 +3,12 @@ const router = express.Router();
 const exhibitorController = require('../controllers/exhibitorController');
 const { verifyExhibitor } = require('../middleware/authMiddleware');
 
+ 
+// إضافة المنتجات
+router.post('/add-products', verifyExhibitor, exhibitorController.addProducts);
+
+// عرض منتجات العارض
+router.get('/my-products', verifyExhibitor, exhibitorController.getMyProducts);
 
 // إنشاء طلب
 router.post('/create-request', verifyExhibitor, exhibitorController.createRequest);
