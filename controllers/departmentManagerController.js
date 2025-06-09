@@ -90,3 +90,31 @@ exports.getExhibitorRequests = async (req, res) => {
     res.status(500).json({ error: 'حدث خطأ أثناء جلب الطلبات' });
   }
 };
+
+// 7. قبول طلب عارض
+exports.acceptExhibitorRequest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
+
+    const request = await ExhibitorRequest.findByPk(requestId, {
+      include: [{ model: User }],
+    });
+
+    if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
+
+    request.status = 'accepted';
+    await request.save();
+
+    // إرسال إيميل للعارض بقبول الطلب
+    await mailService.sendMail({
+      to: request.User.email,
+      subject: 'تم قبول طلبك',
+      text: 'تم قبول طلبك، الرجاء إكمال الدفعة النهائية لتثبيت الحجز.',
+    });
+
+    res.json({ message: 'تم قبول الطلب بنجاح' });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل قبول الطلب' });
+  }
+};
+ 
