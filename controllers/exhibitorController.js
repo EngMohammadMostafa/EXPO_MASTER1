@@ -1,9 +1,9 @@
-// controllers/exhibitorController.js
 const ExhibitorRequest = require('../models/ExhibitorRequest');
+const Product = require('../models/Product');
 
 exports.createRequest = async (req, res) => {
   const { exhibitionName, departmentId, contactPhone, notes } = req.body;
-  const userId = req.user.id; // مأخوذ من verifyExhibitor middleware
+  const userId = req.user.id;
 
   try {
     // التحقق من وجود طلب حالي غير مرفوض
@@ -44,11 +44,9 @@ exports.payInitial = async (req, res) => {
 
     request.paymentStatus = 'paid';
     request.status = 'waiting-approval';
-
     await request.save();
 
     res.status(200).json({ message: "تم دفع المبلغ المبدئي بنجاح. الطلب قيد الموافقة." });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -66,9 +64,10 @@ exports.trackRequest = async (req, res) => {
     res.status(200).json({
       status: request.status,
       paymentStatus: request.paymentStatus,
+      finalPaymentStatus: request.finalPaymentStatus,
+      wingAssigned: request.wingAssigned,
       notes: request.notes
     });
-
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -93,8 +92,6 @@ exports.payFinal = async (req, res) => {
   }
 };
 
-const Product = require('../models/Product');
-
 exports.addProducts = async (req, res) => {
   const { productName, description, price } = req.body;
   const exhibitorId = req.user.id;
@@ -102,8 +99,13 @@ exports.addProducts = async (req, res) => {
   try {
     const request = await ExhibitorRequest.findOne({ where: { userId: exhibitorId } });
 
-    if (!request || request.finalPaymentStatus !== 'paid' || !request.wingAssigned) {
-      return res.status(403).json({ message: "لا يمكنك إضافة المنتجات قبل تخصيص جناح لك." });
+    if (
+      !request ||
+      request.status !== 'approved' ||
+      request.finalPaymentStatus !== 'paid' ||
+      !request.wingAssigned
+    ) {
+      return res.status(403).json({ message: "لا يمكنك إضافة المنتجات قبل الموافقة وتخصيص جناح." });
     }
 
     const newProduct = await Product.create({
@@ -118,3 +120,5 @@ exports.addProducts = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
