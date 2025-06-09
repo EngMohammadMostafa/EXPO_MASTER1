@@ -5,3 +5,9 @@ const authMiddleware = require('../middleware/auth'); // تأكد من وجود�
 
 // حماية كل الراوتات
 router.use(authMiddleware.verifyToken); // يضيف req.user تلقائيًا
+
+// إدارة الأجنحة (sections)
+router.get('/sections', departmentManagerController.getSectionsByDepartment);
+router.delete('/sections/:id', departmentManagerController.deleteSection);
+router.put('/sections/:id', departmentManagerController.updateSection);
+router.post('/sections', departmentManagerController.createSection);
