@@ -20,7 +20,7 @@ const exhibitorRoutes = require('./routes/exhibitorRoutes');
 app.use('/api/exhibitor', exhibitorRoutes);
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;  
 
 sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () => {

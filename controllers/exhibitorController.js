@@ -6,7 +6,7 @@ exports.createRequest = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // التحقق من وجود طلب حالي غير مرفوض
+     
     const existing = await ExhibitorRequest.findOne({ 
       where: { userId },
       order: [['createdAt', 'DESC']]
@@ -121,7 +121,7 @@ exports.addProducts = async (req, res) => {
   }
 };
 
-// ✅ دالة جديدة: عرض منتجات العارض الحالي
+ 
 exports.getMyProducts = async (req, res) => {
   const exhibitorId = req.user.id;
 
