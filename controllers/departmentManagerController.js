@@ -60,3 +60,17 @@ exports.getConfirmedExhibitors = async (req, res) => {
     res.status(500).json({ error: 'حدث خطأ أثناء جلب العارضين' });
   }
 };
+
+// 5. إنشاء جناح جديد لعارض
+exports.createBooth = async (req, res) => {
+  try {
+    const { exhibitorId, name, location } = req.body;
+    const departmentId = req.user.departmentId;
+
+    const booth = await Booth.create({ name, location, exhibitorId, departmentId });
+
+    res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', booth });
+  } catch (err) {
+    res.status(500).json({ error: 'فشل في إنشاء الجناح' });
+  }
+};
