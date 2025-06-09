@@ -6,6 +6,16 @@ exports.createRequest = async (req, res) => {
   const userId = req.user.id; // مأخوذ من verifyExhibitor middleware
 
   try {
+    // التحقق من وجود طلب حالي غير مرفوض
+    const existing = await ExhibitorRequest.findOne({ 
+      where: { userId },
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (existing && existing.status !== 'rejected') {
+      return res.status(400).json({ message: "لديك طلب جاري بالفعل" });
+    }
+
     const newRequest = await ExhibitorRequest.create({
       userId,
       exhibitionName,
