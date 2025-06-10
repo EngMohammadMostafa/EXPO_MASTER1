@@ -18,8 +18,5 @@ const Section = sequelize.define('Section', {
   },
 });
 
-// ✅ العلاقات
-Section.belongsTo(Department, { foreignKey: 'departments_id', as: 'department' });
-Section.belongsTo(User, { foreignKey: 'exhibitor_id', as: 'exhibitor' });
 
 module.exports = Section;
