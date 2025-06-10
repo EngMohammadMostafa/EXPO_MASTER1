@@ -1,30 +1,25 @@
-module.exports = (sequelize, DataTypes) => {
-  const Section = sequelize.define('Section', {
-    name: {
-      type: DataTypes.STRING(35),
-      allowNull: false,
-    },
-    departments_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    exhibitor_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-  });
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
+const Department = require('./Department');
+const User = require('./User');
 
-  Section.associate = (models) => {
-    Section.belongsTo(models.User, {
-      foreignKey: 'exhibitor_id',
-      as: 'exhibitor',
-    });
+const Section = sequelize.define('Section', {
+  name: {
+    type: DataTypes.STRING(35),
+    allowNull: false,
+  },
+  departments_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  exhibitor_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+});
 
-    Section.belongsTo(models.Department, {
-      foreignKey: 'departments_id',
-      as: 'department',
-    });
-  };
+// ✅ العلاقات
+Section.belongsTo(Department, { foreignKey: 'departments_id', as: 'department' });
+Section.belongsTo(User, { foreignKey: 'exhibitor_id', as: 'exhibitor' });
 
-  return Section;
-};
+module.exports = Section;
