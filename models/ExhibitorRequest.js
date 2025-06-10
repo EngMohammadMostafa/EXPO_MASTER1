@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
+const User = require('./User');
+const Department = require('./Department');
 
 const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
   userId: {
@@ -39,12 +41,8 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
   }
 });
 
-// العلاقة مع المستخدم
-ExhibitorRequest.associate = (models) => {
-  ExhibitorRequest.belongsTo(models.User, {
-    foreignKey: 'userId',
-    as: 'User'
-  });
-};
+ 
+ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+ExhibitorRequest.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
 
 module.exports = ExhibitorRequest;
