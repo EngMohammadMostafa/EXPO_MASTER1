@@ -97,19 +97,20 @@ exports.acceptExhibitorRequest = async (req, res) => {
     const requestId = req.params.id;
 
     const request = await ExhibitorRequest.findByPk(requestId, {
-      include: [{ model: User }],
+      include: [{ model: User }]
     });
 
     if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
 
-    request.status = 'accepted';
+    // ✅ تعديل القيمة لتكون "approved"
+    request.status = 'approved';
     await request.save();
 
     // إرسال إيميل للعارض بقبول الطلب
     await mailService.sendMail({
       to: request.User.email,
       subject: 'تم قبول طلبك',
-      text: 'تم قبول طلبك، الرجاء إكمال الدفعة النهائية لتثبيت الحجز.',
+      text: 'تم قبول طلبك، الرجاء إكمال الدفعة النهائية لتثبيت الحجز.'
     });
 
     res.json({ message: 'تم قبول الطلب بنجاح' });
@@ -117,6 +118,7 @@ exports.acceptExhibitorRequest = async (req, res) => {
     res.status(500).json({ error: 'فشل قبول الطلب' });
   }
 };
+
 
 // 8. رفض طلب عارض
 exports.rejectExhibitorRequest = async (req, res) => {
