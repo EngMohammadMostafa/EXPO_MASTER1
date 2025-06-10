@@ -1,6 +1,6 @@
-// models/Product.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
+const User = require('./User');
 
 const Product = sequelize.define('Product', {
   exhibitorId: {
@@ -19,5 +19,7 @@ const Product = sequelize.define('Product', {
   }
 });
 
-module.exports = Product;
+// ✅ العلاقة مع العارض
+Product.belongsTo(User, { foreignKey: 'exhibitorId', as: 'exhibitor' });
 
+module.exports = Product;
