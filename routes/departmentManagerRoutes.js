@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const departmentManagerController = require('../controllers/departmentManagerController');
-const authMiddleware = require('../middleware/auth'); // يحتوي على verifyToken
+const authMiddleware = require('../middleware/auth');
 
-// ✅ حماية جميع الراوتات عبر verifyToken
+// ✅ حماية جميع الراوتات عبر التوكن
 router.use(authMiddleware.verifyToken);
 
-// ✅ إدارة الأجنحة (Sections)
+// ✅ إدارة الأجنحة
 router.get('/sections', departmentManagerController.getSectionsByDepartment);
 router.post('/sections', departmentManagerController.createSection);
 router.put('/sections/:id', departmentManagerController.updateSection);
