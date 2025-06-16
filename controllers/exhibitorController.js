@@ -1,6 +1,6 @@
 const ExhibitorRequest = require('../models/ExhibitorRequest');
 const Product = require('../models/Product');
-const Wing = require('../models/Wing'); // تأكد من وجود هذا الملف
+const Section = require('../models/Section');
 
 exports.createRequest = async (req, res) => {
   const { exhibitionName, departmentId, contactPhone, notes } = req.body;
@@ -84,31 +84,39 @@ exports.payFinal = async (req, res) => {
       return res.status(400).json({ message: "طلبك لم يُقبل بعد أو غير موجود" });
     }
 
-    // تحديث حالة الدفع
-    request.finalPaymentStatus = 'paid';
-
-    // التحقق من وجود جناح مسبق
-    if (!request.wingAssigned) {
-      // إنشاء جناح جديد
-      const newWing = await Wing.create({
-        exhibitorId: userId,
-        departmentId: request.departmentId,
-        wingNumber: `W-${Math.floor(Math.random() * 9000 + 1000)}` // رقم جناح عشوائي
-      });
-
-      // ربط الجناح بالطلب
-      request.wingAssigned = true;
-      request.wingId = newWing.id; // إذا كان لديك هذا الحقل في الجدول
+    // تحقق إذا تم دفع الدفعة النهائية من قبل
+    if (request.finalPaymentStatus === 'paid' && request.wingAssigned) {
+      return res.status(400).json({ message: "لقد قمت بدفع الدفعة النهائية وتم تخصيص جناح لك مسبقًا." });
     }
 
+    // تحديث حالة الدفع النهائي
+    request.finalPaymentStatus = 'paid';
+
+    // إنشاء الجناح
+    const department = await Department.findByPk(request.departmentId);
+    if (!department) {
+      return res.status(404).json({ message: "القسم المختار غير موجود" });
+    }
+
+    const newSection = await Section.create({
+      name: `جناح ${request.exhibitionName}`,
+      departments_id: department.id,
+      exhibitor_id: userId,
+    });
+
+    // تحديث حالة الجناح في الطلب
+    request.wingAssigned = true;
     await request.save();
 
-    res.status(200).json({ message: "تم دفع الدفعة النهائية بنجاح وتم تخصيص الجناح." });
+    res.status(200).json({
+      message: "تم دفع الدفعة النهائية وتخصيص الجناح بنجاح. يمكنك الآن إضافة منتجاتك.",
+      section: newSection
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };
-
 
 exports.addProducts = async (req, res) => {
   const { productName, description, price } = req.body;
