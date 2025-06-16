@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-const { register, login, forgotPassword, resetPassword } = 
-require('../controllers/authController');
+// استيراد كل الدوال مرة واحدة
+const authController = require('../controllers/authController');
 
-// المسارات
-router.post('/register', register);
-router.post('/login', login);
-router.post('/forgot-password', forgotPassword);
-router.post('/reset-password', resetPassword);
+// استخدام الدوال من الكائن
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.post('/forgot-password', authController.forgotPassword);
+router.put('/reset-password', authController.resetPassword);
+
 module.exports = router;
