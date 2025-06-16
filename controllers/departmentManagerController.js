@@ -1,13 +1,11 @@
 const { Section, ExhibitorRequest, User, Department } = require('../models');
 const mailService = require('../utils/mailService');
 
-// 1. جلب كل الأجنحة (Sections) في القسم الخاص بمدير القسم
+// 1. جلب كل الأجنحة في القسم الخاص بمدير القسم
 exports.getSectionsByDepartment = async (req, res) => {
   try {
     const departmentId = req.user.departmentId;
-
     const sections = await Section.findAll({ where: { departments_id: departmentId } });
-
     res.json(sections);
   } catch (err) {
     res.status(500).json({ error: 'حدث خطأ أثناء جلب الأجنحة' });
@@ -18,9 +16,7 @@ exports.getSectionsByDepartment = async (req, res) => {
 exports.deleteSection = async (req, res) => {
   try {
     const sectionId = req.params.id;
-
     await Section.destroy({ where: { id: sectionId } });
-
     res.json({ message: 'تم حذف الجناح بنجاح' });
   } catch (err) {
     res.status(500).json({ error: 'فشل حذف الجناح' });
@@ -32,23 +28,21 @@ exports.updateSection = async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
-
     await Section.update({ name }, { where: { id } });
-
     res.json({ message: 'تم تعديل الجناح بنجاح' });
   } catch (err) {
     res.status(500).json({ error: 'فشل تعديل الجناح' });
   }
 };
 
-// 4. جلب العارضين الذين أكملوا الدفع النهائي
+// ✅ 4. جلب العارضين الذين أكملوا الدفع النهائي
 exports.getConfirmedExhibitors = async (req, res) => {
   try {
     const departmentId = req.user.departmentId;
 
     const exhibitors = await User.findAll({
       where: {
-        userType: 2, // العارضين
+        userType: 2,
         departmentId,
         isPaymentConfirmed: true,
       },
@@ -66,9 +60,7 @@ exports.createSection = async (req, res) => {
   try {
     const { exhibitor_id, name } = req.body;
     const departments_id = req.user.departmentId;
-
     const section = await Section.create({ name, exhibitor_id, departments_id });
-
     res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', section });
   } catch (err) {
     res.status(500).json({ error: 'فشل في إنشاء الجناح' });
@@ -79,12 +71,10 @@ exports.createSection = async (req, res) => {
 exports.getExhibitorRequests = async (req, res) => {
   try {
     const departmentId = req.user.departmentId;
-
     const requests = await ExhibitorRequest.findAll({
       where: { departmentId },
       include: [{ model: User, attributes: ['fullName', 'email'] }],
     });
-
     res.json(requests);
   } catch (err) {
     res.status(500).json({ error: 'حدث خطأ أثناء جلب الطلبات' });
@@ -95,18 +85,15 @@ exports.getExhibitorRequests = async (req, res) => {
 exports.acceptExhibitorRequest = async (req, res) => {
   try {
     const requestId = req.params.id;
-
     const request = await ExhibitorRequest.findByPk(requestId, {
       include: [{ model: User }]
     });
 
     if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
 
-    // ✅ تعديل القيمة لتكون "approved"
     request.status = 'approved';
     await request.save();
 
-    // إرسال إيميل للعارض بقبول الطلب
     await mailService.sendMail({
       to: request.User.email,
       subject: 'تم قبول طلبك',
@@ -118,7 +105,6 @@ exports.acceptExhibitorRequest = async (req, res) => {
     res.status(500).json({ error: 'فشل قبول الطلب' });
   }
 };
-
 
 // 8. رفض طلب عارض
 exports.rejectExhibitorRequest = async (req, res) => {
@@ -135,7 +121,6 @@ exports.rejectExhibitorRequest = async (req, res) => {
     request.status = 'rejected';
     await request.save();
 
-    // إرسال إيميل بالرفض
     await mailService.sendMail({
       to: request.User.email,
       subject: 'تم رفض طلبك',
