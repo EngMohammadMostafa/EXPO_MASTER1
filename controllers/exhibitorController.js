@@ -105,24 +105,31 @@ exports.payFinal = async (req, res) => {
 
 
 
-exports.addProducts = async (req, res) => {
-  const { productName, description, price } = req.body;
-  const exhibitorId = req.user.id;
+exports.addProduct = async (req, res) => {
+  const { name, description, price, imageUrl } = req.body;
+  const userId = req.user.id;
 
-  const request = await ExhibitorRequest.findOne({ where: { userId: exhibitorId } });
-  if (!request || request.status !== 'approved' || request.finalPaymentStatus !== 'paid' || !request.wingAssigned)
-    return res.status(403).json({ message: "لا يمكنك إضافة المنتجات قبل تخصيص جناحك." });
+  try {
+    const section = await Section.findOne({ where: { exhibitor_id: userId } });
+    if (!section) {
+      return res.status(400).json({ message: 'ليس لديك جناح لإضافة المنتجات إليه' });
+    }
 
-  const newProduct = await Product.create({
-    exhibitorId,
-    sectionId: request.sectionId, // تأكد من إضافة الحقل في الموديل
-    productName,
-    description,
-    price,
-  });
+    const product = await Product.create({
+      name,
+      description,
+      price,
+      imageUrl,
+      exhibitor_id: userId,
+      section_id: section.id,
+    });
 
-  res.status(201).json({ message: "تم إضافة المنتج بنجاح", product: newProduct });
+    res.status(201).json({ message: 'تم إضافة المنتج بنجاح', product });
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء إضافة المنتج' });
+  }
 };
+
 
  
 exports.getMyProducts = async (req, res) => {
