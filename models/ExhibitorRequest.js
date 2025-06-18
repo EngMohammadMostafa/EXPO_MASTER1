@@ -38,10 +38,19 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
   wingAssigned: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+
+  // ✅ الحقول الجديدة
+  rejectionReason: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  sectionId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
   }
 });
 
- 
 ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 ExhibitorRequest.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
 
