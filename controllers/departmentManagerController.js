@@ -149,3 +149,22 @@ exports.acceptExhibitorRequest = async (req, res) => {
 
   res.json({ message: 'تم قبول الطلب وإرسال الإيميل.' });
 };
+
+// رفض طلب عارض
+exports.rejectExhibitorRequest = async (req, res) => {
+  const { reason } = req.body;
+  const request = await ExhibitorRequest.findByPk(req.params.id, { include: [{ model: User }] });
+  if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
+
+  request.status = 'rejected';
+  request.rejectionReason = reason; // تأكد من إضافة الحقل في الموديل إذا لم يكن موجوداً
+  await request.save();
+
+  await mailService.sendMail({
+    to: request.User.email,
+    subject: 'تم رفض طلبك',
+    text: `نأسف، تم رفض طلبك. السبب: ${reason}`,
+  });
+
+  res.json({ message: 'تم رفض الطلب وإرسال سبب الرفض.' });
+};
