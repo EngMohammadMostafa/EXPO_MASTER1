@@ -55,8 +55,10 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
 });
   
 
-ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-ExhibitorRequest.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
-ExhibitorRequest.belongsTo(Section, {foreignKey: 'sectionId',as: 'section'});
+ExhibitorRequest.associate = (models) => {
+  ExhibitorRequest.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+  ExhibitorRequest.belongsTo(models.Department, { foreignKey: 'departmentId', as: 'department' });
+  ExhibitorRequest.belongsTo(models.Section, { foreignKey: 'sectionId', as: 'section' });
+};
 
 module.exports = ExhibitorRequest;
