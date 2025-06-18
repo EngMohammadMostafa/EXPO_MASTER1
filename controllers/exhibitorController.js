@@ -89,8 +89,8 @@ exports.payFinal = async (req, res) => {
       return res.status(404).json({ message: "طلب العارض غير موجود" });
     }
 
-    request.paymentStatus = 'final-paid';
-    request.status = 'final-waiting-section';
+    request.finalPaymentStatus = 'paid'; // ✅ هذا الحقل موجود في الموديل
+    request.status = 'waiting-approval'; // ✅ موجود
     request.finalPaymentDate = new Date();
     await request.save();
 
@@ -106,8 +106,9 @@ exports.payFinal = async (req, res) => {
   }
 };
 
+
 exports.addProduct = async (req, res) => {
-  const { name, description, price, imageUrl } = req.body;
+  const { productName, description, price, imageUrl } = req.body;
   const userId = req.user.id;
 
   try {
@@ -117,12 +118,11 @@ exports.addProduct = async (req, res) => {
     }
 
     const product = await Product.create({
-      name,
-      description,
-      price,
-      imageUrl,
-      exhibitor_id: userId,
-      section_id: section.id,
+     productName ,
+     description,
+     price,
+     exhibitorId: userId,
+     sectionId: section.id
     });
 
     res.status(201).json({ message: 'تم إضافة المنتج بنجاح', product });
