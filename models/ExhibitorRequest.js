@@ -36,12 +36,14 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
     type: DataTypes.ENUM('unpaid', 'paid'),
     defaultValue: 'unpaid'
   },
+  finalPaymentDate: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
   wingAssigned: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
-  },  
-
-  // ✅ الحقول الجديدة
+  },
   rejectionReason: {
     type: DataTypes.TEXT,
     allowNull: true
@@ -51,6 +53,7 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
     allowNull: true
   }
 });
+
 
 ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 ExhibitorRequest.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
