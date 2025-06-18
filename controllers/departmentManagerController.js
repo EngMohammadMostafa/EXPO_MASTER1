@@ -132,3 +132,20 @@ exports.rejectExhibitorRequest = async (req, res) => {
     res.status(500).json({ error: 'فشل رفض الطلب' });
   }
 };
+
+// قبول طلب عارض
+exports.acceptExhibitorRequest = async (req, res) => {
+  const request = await ExhibitorRequest.findByPk(req.params.id, { include: [{ model: User }] });
+  if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
+  
+  request.status = 'approved';
+  await request.save();
+
+  await mailService.sendMail({
+    to: request.User.email,
+    subject: 'تم قبول طلبك',
+    text: 'لقد تم قبول طلبك. الرجاء الآن دفع الدفعة النهائية لاستكمال إجراءات تخصيص الجناح.',
+  });
+
+  res.json({ message: 'تم قبول الطلب وإرسال الإيميل.' });
+};
