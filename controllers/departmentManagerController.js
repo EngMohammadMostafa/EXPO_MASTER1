@@ -184,3 +184,29 @@ exports.filterRequestsByStatus = async (req, res) => {
     res.status(500).json({ error: 'حدث خطأ أثناء الفلترة' });
   }
 };
+
+exports.getEligibleExhibitorsForSection = async (req, res) => {
+  const departmentId = req.user.departmentId;
+
+  try {
+    const eligible = await User.findAll({
+      where: {
+        userType: 2,
+        departmentId,
+        isPaymentConfirmed: true,
+      },
+      include: [{
+        model: ExhibitorRequest,
+        where: {
+          status: 'final-waiting-section',
+          paymentStatus: 'final-paid',
+        }
+      }],
+      attributes: ['id', 'fullName', 'email']
+    });
+
+    res.json(eligible);
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء جلب العارضين المؤهلين' });
+  }
+};
