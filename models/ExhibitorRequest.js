@@ -1,27 +1,12 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
  
-
 const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
-  userId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  exhibitionName: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  departmentId: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
-  contactPhone: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  notes: {
-    type: DataTypes.TEXT
-  },
+  userId: { type: DataTypes.INTEGER, allowNull: false },
+  exhibitionName: { type: DataTypes.STRING, allowNull: false },
+  departmentId: { type: DataTypes.INTEGER, allowNull: false },
+  contactPhone: { type: DataTypes.STRING, allowNull: false },
+  notes: { type: DataTypes.TEXT },
   status: {
     type: DataTypes.ENUM('pending', 'waiting-approval', 'approved', 'rejected'),
     defaultValue: 'pending'
@@ -51,8 +36,8 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
     allowNull: true
   }
 });
-  
 
+// ✅ التعريف الصحيح للعلاقات
 ExhibitorRequest.associate = (models) => {
   ExhibitorRequest.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
   ExhibitorRequest.belongsTo(models.Department, { foreignKey: 'departmentId', as: 'department' });
