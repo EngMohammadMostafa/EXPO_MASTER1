@@ -49,11 +49,11 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api/exhibitor', exhibitorRoutes);
 
-const PORT = process.env.PORT  3000;
+const PORT = process.env.PORT || 3000;
 
 sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () => {
-    console.log(✅ Server running on port ${PORT});
+    console.log(`✅ Server running on port ${PORT}`);
   });
 }).catch((err) => {
   console.error('❌ Failed to connect to the database:', err.message);
