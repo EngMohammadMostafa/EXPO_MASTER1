@@ -1,8 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const User = require('./User');
-const Department = require('./Department');
-const Section = require('./Section');  
+ 
 
 const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
   userId: {

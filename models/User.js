@@ -22,7 +22,7 @@ const User = sequelize.define('User', {
 });
 
 
-User.associate = (models) => {
+  User.associate = (models) => {
   User.hasMany(models.ExhibitorRequest, { foreignKey: 'userId', as: 'requests' });
 };
 
