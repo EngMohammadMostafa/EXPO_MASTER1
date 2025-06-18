@@ -113,29 +113,19 @@ exports.addProducts = async (req, res) => {
   const { productName, description, price } = req.body;
   const exhibitorId = req.user.id;
 
-  try {
-    const request = await ExhibitorRequest.findOne({ where: { userId: exhibitorId } });
+  const request = await ExhibitorRequest.findOne({ where: { userId: exhibitorId } });
+  if (!request || request.status !== 'approved' || request.finalPaymentStatus !== 'paid' || !request.wingAssigned)
+    return res.status(403).json({ message: "لا يمكنك إضافة المنتجات قبل تخصيص جناحك." });
 
-    if (
-      !request ||
-      request.status !== 'approved' ||
-      request.finalPaymentStatus !== 'paid' ||
-      !request.wingAssigned
-    ) {
-      return res.status(403).json({ message: "لا يمكنك إضافة المنتجات قبل الموافقة وتخصيص جناح." });
-    }
+  const newProduct = await Product.create({
+    exhibitorId,
+    sectionId: request.sectionId, // تأكد من إضافة الحقل في الموديل
+    productName,
+    description,
+    price,
+  });
 
-    const newProduct = await Product.create({
-      exhibitorId,
-      productName,
-      description,
-      price
-    });
-
-    res.status(201).json({ message: "تم إضافة المنتج بنجاح", product: newProduct });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  res.status(201).json({ message: "تم إضافة المنتج بنجاح", product: newProduct });
 };
 
  
