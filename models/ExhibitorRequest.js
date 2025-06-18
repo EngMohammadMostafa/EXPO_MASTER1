@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 const User = require('./User');
 const Department = require('./Department');
+const Section = require('./Section');  
 
 const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
   userId: {
@@ -53,5 +54,6 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
 
 ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 ExhibitorRequest.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
+ExhibitorRequest.belongsTo(Section, {foreignKey: 'sectionId',as: 'section'});
 
 module.exports = ExhibitorRequest;
