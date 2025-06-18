@@ -35,20 +35,23 @@ require('dotenv').config();
 
 const app = express();
 
+// ✅ Middlewares
 app.use(cors());
 app.use(express.json());
 
-// ✅ مسارات التوجيه
+// ✅ Import Routes
 const departmentRoutes = require('./routes/departmentRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const exhibitorRoutes = require('./routes/exhibitorRoutes');
 
+// ✅ Use Routes
 app.use('/departments', departmentRoutes);
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api/exhibitor', exhibitorRoutes);
 
+// ✅ Start Server
 const PORT = process.env.PORT || 3000;
 
 sequelize.sync({ alter: true }).then(() => {
@@ -58,3 +61,4 @@ sequelize.sync({ alter: true }).then(() => {
 }).catch((err) => {
   console.error('❌ Failed to connect to the database:', err.message);
 });
+
