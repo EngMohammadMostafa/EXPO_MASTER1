@@ -10,8 +10,8 @@ const {
 } = require('../controllers/departmentController');
 
 // ✅ الحماية والتفويض لمدير المدينة فقط
-router.use(protect);
-router.use(authorize(4));
+router.use(protect);           // Middleware لحماية جميع الروابط التالية
+router.use(authorize(4));      // Middleware يسمح فقط لمدير المدينة (userType = 4)
 
 router.get('/', getAllDepartments);
 router.post('/', createDepartment);
@@ -20,5 +20,3 @@ router.put('/:id', updateDepartment);
 router.delete('/:id', deleteDepartment);
 
 module.exports = router;
-
-//router.get('/', getAllDepartments); // بدون حماية
