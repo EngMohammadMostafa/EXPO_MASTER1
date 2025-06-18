@@ -168,3 +168,19 @@ exports.rejectExhibitorRequest = async (req, res) => {
 
   res.json({ message: 'تم رفض الطلب وإرسال سبب الرفض.' });
 };
+
+exports.filterRequestsByStatus = async (req, res) => {
+  const departmentId = req.user.departmentId;
+  const { status } = req.query; // 'approved' أو 'rejected' أو 'waiting-approval'
+
+  try {
+    const requests = await ExhibitorRequest.findAll({
+      where: { departmentId, status },
+      include: [{ model: User, attributes: ['fullName', 'email'] }],
+    });
+
+    res.json(requests);
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء الفلترة' });
+  }
+};
