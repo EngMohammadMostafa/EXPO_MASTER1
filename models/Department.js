@@ -25,4 +25,3 @@ const Department = sequelize.define('Department', {
 });
 
 module.exports = Department;
-module.exports = Department;
