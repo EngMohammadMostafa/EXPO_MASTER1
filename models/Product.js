@@ -7,6 +7,10 @@ const Product = sequelize.define('Product', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+   sectionId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
   productName: {
     type: DataTypes.STRING,
     allowNull: false
@@ -18,8 +22,5 @@ const Product = sequelize.define('Product', {
     type: DataTypes.FLOAT
   }
 });
-
-// ✅ العلاقة مع العارض
 Product.belongsTo(User, { foreignKey: 'exhibitorId', as: 'exhibitor' });
-
-module.exports = Product;
+Product.belongsTo(require('./Section'), { foreignKey: 'sectionId', as: 'section' });
