@@ -53,7 +53,7 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
     allowNull: true
   }
 });
-
+  
 
 ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 ExhibitorRequest.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
