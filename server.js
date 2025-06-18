@@ -1,26 +1,25 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/db');
-const departmentRoutes = require('./routes/departmentRoutes');
 require('dotenv').config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use('/departments', departmentRoutes);
 
+// ✅ مسارات التوجيه
+const departmentRoutes = require('./routes/departmentRoutes');
 const authRoutes = require('./routes/authRoutes');
-app.use('/auth', authRoutes);
-
 const adminRoutes = require('./routes/adminRoutes');
-app.use('/admin', adminRoutes); 
-
 const exhibitorRoutes = require('./routes/exhibitorRoutes');
+
+app.use('/departments', departmentRoutes);
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
 app.use('/api/exhibitor', exhibitorRoutes);
 
-
-const PORT = process.env.PORT || 3000;  
+const PORT = process.env.PORT || 3000;
 
 sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () => {
