@@ -7,7 +7,7 @@ const { verifyExhibitor } = require('../middleware/authMiddleware');
 router.use(verifyExhibitor);
 
 // ✅ منتجات العارض
-router.post('/add-products', exhibitorController.addProducts);
+router.post('/add-products', exhibitorController.addProduct);
 router.get('/my-products', exhibitorController.getMyProducts);
 
 // ✅ الطلبات والدفع
