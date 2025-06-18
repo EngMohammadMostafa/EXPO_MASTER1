@@ -3,7 +3,7 @@ const router = express.Router();
 const exhibitorController = require('../controllers/exhibitorController');
 const { verifyExhibitor } = require('../middleware/authMiddleware');
 
-// ✅ الحماية للعارضين فقط
+// ✅ حماية المسارات للعارض فقط
 router.use(verifyExhibitor);
 
 // ✅ منتجات العارض
