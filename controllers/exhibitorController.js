@@ -49,11 +49,18 @@ exports.payInitial = async (req, res) => {
     request.status = 'waiting-approval';
     await request.save();
 
-    res.status(200).json({ message: "تم دفع المبلغ المبدئي بنجاح. الطلب قيد الموافقة." });
+    await mailService.sendMail({
+      to: req.user.email,
+      subject: 'تم دفع الدفعة الأولى',
+      text: 'شكراً لك، نحن الآن نراجع طلبك، وسنقوم بإعلامك بعد الموافقة.',
+    });
+
+    res.status(200).json({ message: "تم دفع المبلغ الأولي بنجاح" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 exports.trackRequest = async (req, res) => {
   const userId = req.user.id;
