@@ -1,11 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/authMiddleware');
-const { createDepartment,getDepartmentById,updateDepartment, deleteDepartment } = require('../controllers/departmentController');
+const exhibitorController = require('../controllers/exhibitorController');
+const { verifyExhibitor } = require('../middleware/authMiddleware');
 
-router.post('/', protect, authorize(4), createDepartment);
-router.get('/:id', protect, authorize(4), getDepartmentById);
-router.put('/:id', protect, authorize(4), updateDepartment);
-router.delete('/:id', protect, authorize(4), deleteDepartment);
+// ✅ الحماية للعارضين فقط
+router.use(verifyExhibitor);
+
+// ✅ منتجات العارض
+router.post('/add-products', exhibitorController.addProduct);
+router.get('/my-products', exhibitorController.getMyProducts);
+
+// ✅ الطلبات والدفع
+router.post('/create-request', exhibitorController.createRequest);
+router.get('/track-request', exhibitorController.trackRequest);
+router.post('/pay-initial', exhibitorController.payInitial);
+router.post('/pay-final', exhibitorController.payFinal);
 
 module.exports = router;
