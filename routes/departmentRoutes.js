@@ -1,19 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const exhibitorController = require('../controllers/exhibitorController');
-const { verifyExhibitor } = require('../middleware/authMiddleware');
+const { verifyToken, authorize } = require('../middleware/authMiddleware');
+const {
+  createDepartment,
+  getDepartmentById,
+  updateDepartment,
+  deleteDepartment,
+  getAllDepartments,
+} = require('../controllers/departmentController');
 
-// ✅ الحماية للعارضين فقط
-router.use(verifyExhibitor);
+// ✅ حماية جميع المسارات والتأكد من أن المستخدم مدير مدينة (userType = 4)
+router.use(verifyToken);
+router.use(authorize(4));
 
-// ✅ منتجات العارض
-router.post('/add-products', exhibitorController.addProduct);
-router.get('/my-products', exhibitorController.getMyProducts);
-
-// ✅ الطلبات والدفع
-router.post('/create-request', exhibitorController.createRequest);
-router.get('/track-request', exhibitorController.trackRequest);
-router.post('/pay-initial', exhibitorController.payInitial);
-router.post('/pay-final', exhibitorController.payFinal);
+router.get('/', getAllDepartments);
+router.post('/', createDepartment);
+router.get('/:id', getDepartmentById);
+router.put('/:id', updateDepartment);
+router.delete('/:id', deleteDepartment);
 
 module.exports = router;
