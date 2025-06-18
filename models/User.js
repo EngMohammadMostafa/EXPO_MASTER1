@@ -21,10 +21,8 @@ const User = sequelize.define('User', {
   }
 });
 
-
-  User.associate = (models) => {
-  User.hasMany(models.ExhibitorRequest, { foreignKey: 'userId', as: 'requests' });
-};
-
+// علاقته مع طلبات العارضين
+const ExhibitorRequest = require('./ExhibitorRequest');
+User.hasMany(ExhibitorRequest, { foreignKey: 'userId', as: 'requests' });
 
 module.exports = User;
