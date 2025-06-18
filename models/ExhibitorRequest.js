@@ -39,7 +39,7 @@ const ExhibitorRequest = sequelize.define('ExhibitorRequest', {
   wingAssigned: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
-  },
+  },  
 
   // ✅ الحقول الجديدة
   rejectionReason: {
