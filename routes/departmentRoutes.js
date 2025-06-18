@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { verifyToken, authorize } = require('../middleware/authMiddleware');
 const {
   createDepartment,
   getDepartmentById,
@@ -9,9 +9,9 @@ const {
   getAllDepartments,
 } = require('../controllers/departmentController');
 
-// ✅ الحماية والتفويض لمدير المدينة فقط
-router.use(protect);           // Middleware لحماية جميع الروابط التالية
-router.use(authorize(4));      // Middleware يسمح فقط لمدير المدينة (userType = 4)
+// ✅ حماية جميع المسارات والتأكد من أن المستخدم مدير مدينة (userType = 4)
+router.use(verifyToken);
+router.use(authorize(4));
 
 router.get('/', getAllDepartments);
 router.post('/', createDepartment);
