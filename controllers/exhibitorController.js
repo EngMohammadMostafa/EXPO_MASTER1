@@ -78,34 +78,30 @@ exports.trackRequest = async (req, res) => {
 
 exports.payFinal = async (req, res) => {
   const userId = req.user.id;
-  const request = await ExhibitorRequest.findOne({ where: { userId } });
 
-  if (!request || request.status !== 'approved')
-    return res.status(400).json({ message: "طلبك لم يُقبل بعد أو غير موجود." });
+  try {
+    const request = await ExhibitorRequest.findOne({ where: { userId } });
+    if (!request) {
+      return res.status(404).json({ message: "طلب العارض غير موجود" });
+    }
 
-  if (request.finalPaymentStatus === 'paid' && request.wingAssigned)
-    return res.status(400).json({ message: "تم الدفع وتخصيص الجناح مسبقًا." });
+    request.paymentStatus = 'final-paid';
+    request.status = 'final-waiting-section';
+    request.finalPaymentDate = new Date(); // تأريخ الدفع
+    await request.save();
 
-  request.finalPaymentStatus = 'paid';
-  const newSection = await Section.create({
-    name: `جناح ${request.exhibitionName}`,
-    departments_id: request.departmentId,
-    exhibitor_id: userId,
-  });
-  request.wingAssigned = true;
-  await request.save();
+    await mailService.sendMail({
+      to: req.user.email,
+      subject: 'تم استلام الدفعة النهائية',
+      text: 'شكرًا لك، تم استلام دفعتك النهائية وسيتم تأكيد جناحك خلال 24 ساعة.',
+    });
 
-  await mailService.sendMail({
-    to: req.user.email,
-    subject: 'تم تخصيص جناحك!',
-    text: `تم دفع الرسوم النهائية وتخصيص جناحك بنجاح. يمكنك الآن إضافة المنتجات داخل جناحك.`,
-  });
-
-  res.status(200).json({
-    message: "تم الدفع وتخصيص الجناح بنجاح.",
-    section: newSection,
-  });
+    res.json({ message: "تم دفع الدفعة النهائية بنجاح" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };
+
 
 
 
