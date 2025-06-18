@@ -1,7 +1,6 @@
 const ExhibitorRequest = require('../models/ExhibitorRequest');
 const Product = require('../models/Product');
 const Section = require('../models/Section');
-
 const mailService = require('../utils/mailService');
 
 exports.createRequest = async (req, res) => {
@@ -9,7 +8,6 @@ exports.createRequest = async (req, res) => {
   const userId = req.user.id;
 
   try {
-     
     const existing = await ExhibitorRequest.findOne({ 
       where: { userId },
       order: [['createdAt', 'DESC']]
@@ -61,7 +59,6 @@ exports.payInitial = async (req, res) => {
   }
 };
 
-
 exports.trackRequest = async (req, res) => {
   const userId = req.user.id;
 
@@ -94,7 +91,7 @@ exports.payFinal = async (req, res) => {
 
     request.paymentStatus = 'final-paid';
     request.status = 'final-waiting-section';
-    request.finalPaymentDate = new Date(); // تأريخ الدفع
+    request.finalPaymentDate = new Date();
     await request.save();
 
     await mailService.sendMail({
@@ -108,9 +105,6 @@ exports.payFinal = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
 
 exports.addProduct = async (req, res) => {
   const { name, description, price, imageUrl } = req.body;
@@ -137,13 +131,11 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-
- 
 exports.getMyProducts = async (req, res) => {
   const exhibitorId = req.user.id;
 
   try {
-    const products = await Product.findAll({ where: { exhibitorId } });
+    const products = await Product.findAll({ where: { exhibitor_id: exhibitorId } });
 
     res.status(200).json({ products });
   } catch (error) {
