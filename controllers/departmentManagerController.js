@@ -210,3 +210,35 @@ exports.getEligibleExhibitorsForSection = async (req, res) => {
     res.status(500).json({ error: 'حدث خطأ أثناء جلب العارضين المؤهلين' });
   }
 };
+
+
+exports.approveRequest = async (req, res) => {
+  const { requestId } = req.params;
+
+  try {
+    const request = await ExhibitorRequest.findByPk(requestId);
+    if (!request) {
+      return res.status(404).json({ message: "الطلب غير موجود" });
+    }
+
+    if (request.status === 'approved') {
+      return res.status(400).json({ message: 'الطلب تمت الموافقة عليه مسبقًا' });
+    }
+
+    request.status = 'approved';
+    await request.save();
+
+    const user = await User.findByPk(request.userId);
+    if (user) {
+      await mailService.sendMail({
+        to: user.email,
+        subject: 'تمت الموافقة على طلبك',
+        text: 'يمكنك الآن دفع الدفعة النهائية وإنشاء جناحك.',
+      });
+    }
+
+    res.status(200).json({ message: 'تمت الموافقة على الطلب' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
