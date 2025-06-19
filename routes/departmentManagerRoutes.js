@@ -11,6 +11,7 @@ router.get('/sections', departmentManagerController.getSectionsByDepartment);
 router.post('/sections', departmentManagerController.createSection);
 router.put('/sections/:id', departmentManagerController.updateSection);
 router.delete('/sections/:id', departmentManagerController.deleteSection);
+router.post('/exhibitor-requests/:requestId/reject', authMiddleware, departmentManagerController.rejectRequest);
 
 // ✅ العارضين الذين أكملوا الدفع النهائي
 router.get('/confirmed-exhibitors', departmentManagerController.getConfirmedExhibitors);
@@ -21,3 +22,4 @@ router.put('/requests/accept/:id', departmentManagerController.acceptExhibitorRe
 router.put('/requests/reject/:id', departmentManagerController.rejectExhibitorRequest);
 
 module.exports = router;
+
