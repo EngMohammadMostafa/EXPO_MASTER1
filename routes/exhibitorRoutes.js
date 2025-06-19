@@ -21,3 +21,4 @@ module.exports = router;
 router.post('/add-schedule', exhibitorController.createSchedule);
 router.put('/schedule/:id', exhibitorController.updateSchedule);
 router.delete('/schedule/:id', exhibitorController.deleteSchedule);
+router.get('/my-schedules', exhibitorController.getMySchedules);

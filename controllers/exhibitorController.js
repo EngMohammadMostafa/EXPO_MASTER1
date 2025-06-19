@@ -270,3 +270,17 @@ exports.getMyProducts = async (req, res) => {
             res.status(500).json({ error: error.message });
           }
         };
+        exports.getMySchedules = async (req, res) => {
+            try {
+                const sections = await Section.findAll({ where: { exhibitor_id: exhibitorId } });
+                const departmentIds = sections.map(sec => sec.departments_id);
+            
+                const schedules = await Schedule.findAll({
+                  where: { departmentId: departmentIds }
+                });
+            
+                res.json({ schedules });
+              } catch (error) {
+                res.status(500).json({ error: error.message });
+              }
+            };
