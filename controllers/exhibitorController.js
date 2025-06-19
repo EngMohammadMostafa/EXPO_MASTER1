@@ -3,7 +3,9 @@ const Product = require('../models/Product');
 const Section = require('../models/Section');
 const mailService = require('../utils/mailService');
 const Schedule = require('../models/Schedule');
- 
+const { id } = req.params;
+const { eventTitle, eventDate } = req.body;
+const exhibitorId = req.user.id;
 
 exports.createRequest = async (req, res) => {
   const { exhibitionName, departmentId, contactPhone, notes } = req.body;
@@ -215,3 +217,31 @@ exports.getMyProducts = async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   };
+  exports.updateSchedule = async (req, res) => {
+    try {
+        // نحصل على الفعالية
+        const schedule = await Schedule.findByPk(id);
+        if (!schedule) return res.status(404).json({ message: 'الفعالية غير موجودة' });
+    
+        // تحقق أن العارض يمتلك جناحاً في القسم المرتبط بالفعالية
+        const section = await Section.findOne({
+          where: {
+            exhibitor_id: exhibitorId,
+            departments_id: schedule.departmentId
+          }
+        });
+    
+        if (!section) {
+          return res.status(403).json({ message: 'لا تملك صلاحية تعديل هذه الفعالية' });
+        }
+    
+        schedule.eventTitle = eventTitle || schedule.eventTitle;
+        schedule.eventDate = eventDate || schedule.eventDate;
+    
+        await schedule.save();
+    
+        res.json({ message: 'تم تعديل الفعالية بنجاح', schedule });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    };
