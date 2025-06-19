@@ -2,6 +2,7 @@ const ExhibitorRequest = require('../models/ExhibitorRequest');
 const Product = require('../models/Product');
 const Section = require('../models/Section');
 const mailService = require('../utils/mailService');
+const Schedule = require('../models/Schedule');
  
 
 exports.createRequest = async (req, res) => {
@@ -184,5 +185,33 @@ exports.getMyProducts = async (req, res) => {
       res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', wing });
     } catch (err) {
       res.status(500).json({ error: 'حدث خطأ أثناء إنشاء الجناح' });
+    }
+  };
+  exports.createSchedule = async (req, res) => {
+    const { departmentId, eventTitle, eventDate } = req.body;
+    const exhibitorId = req.user.id;
+  
+    try {
+      // تحقق أن العارض يمتلك جناحاً في القسم المحدد
+      const section = await Section.findOne({
+        where: {
+          exhibitor_id: exhibitorId,
+          departments_id: departmentId
+        }
+      });
+  
+      if (!section) {
+        return res.status(403).json({ message: 'لا يمكنك إنشاء فعالية في هذا القسم' });
+      }
+  
+      const schedule = await Schedule.create({
+        departmentId,
+        eventTitle,
+        eventDate
+      });
+  
+      res.status(201).json({ message: 'تم إنشاء الفعالية بنجاح', schedule });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
   };
