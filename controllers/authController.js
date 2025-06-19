@@ -22,7 +22,7 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       userType
-    });
+    }); 
 
     if (userType === 3) {
       return res.status(201).json({
