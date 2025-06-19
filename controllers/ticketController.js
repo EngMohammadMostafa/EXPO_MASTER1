@@ -1,59 +1,52 @@
 const db = require("../models");
-const qrcode = require("qrcode");
+const { TicketReservation, Payment, User, Department } = db;
 
-const TicketReservation = db.ticket_reservation;
-const Payment = db.payment;
-const Department = db.departments;
-
-exports.buyTicket = async (req, res) => {
+exports.reserveTicketAndPay = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { departmentId, paymentMethod } = req.body;
+    const {
+      user_id,
+      department_id,
+      payment_method,
+      amount,
+      payment_type // 'initial' or 'final'
+    } = req.body;
 
-    // تحقق إذا القسم موجود
-    const department = await Department.findByPk(departmentId);
-    if (!department) {
-      return res.status(404).json({ message: "القسم غير موجود" });
+    // تحقق من أن المستخدم والقسم موجودان
+    const user = await User.findByPk(user_id);
+    const department = await Department.findByPk(department_id);
+
+    if (!user || !department) {
+      return res.status(404).json({ message: "User or department not found." });
     }
 
-    // تحقق إذا اشترى مسبقًا
-    const existing = await TicketReservation.findOne({
-      where: { user_id: userId, department_id: departmentId }
-    });
+    // إنشاء رمز QR وهمي (يمكن تغييره لتوليد حقيقي)
+    const qrCode = `QR-${Date.now()}-${user_id}`;
 
-    if (existing) {
-      return res.status(400).json({ message: "لقد اشتريت تذكرة لهذا القسم مسبقًا" });
-    }
-
-    // توليد QR code
-    const qrContent = `${userId}-${departmentId}-${Date.now()}`;
-    const qrImage = await qrcode.toDataURL(qrContent);
-
-    // إنشاء تذكرة
+    // إنشاء الحجز
     const ticket = await TicketReservation.create({
-      user_id: userId,
-      department_id: departmentId,
-      qr_code: qrImage,
-      payment_method: paymentMethod
+      user_id,
+      department_id,
+      qr_code: qrCode,
+      payment_method,
     });
 
-    // تسجيل الدفع
-    await Payment.create({
-      booking_request_id: ticket.id, // نفترض أن booking_request_id يشير إلى التذكرة
-      amount: 10.0, // ثابت أو ديناميكي حسب القسم
-      payment_type: 'initial',
-      payment_method: paymentMethod,
+    // إنشاء الدفع
+    const payment = await Payment.create({
+      booking_request_id: ticket.id,
+      amount,
+      payment_type,
+      payment_method,
       paid_at: new Date(),
-      validated: 1
+      validated: true,
     });
 
-    // استجابة
-    res.status(201).json({
-      message: "تم شراء التذكرة بنجاح",
-      ticket
+    return res.status(201).json({
+      message: "Ticket reserved and payment completed.",
+      ticket,
+      payment,
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "حدث خطأ أثناء شراء التذكرة" });
+  } catch (error) {
+    console.error("Error in reserveTicketAndPay:", error);
+    return res.status(500).json({ message: "Server error.", error });
   }
 };

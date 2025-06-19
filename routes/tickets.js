@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const ticketController = require("../controllers/ticketController");
-const authenticateToken = require("../middleware/auth"); // تحقق من تسجيل الدخول
 
-router.post("/buy", authenticateToken, ticketController.buyTicket);
+// حجز تذكرة + الدفع
+router.post("/reserve", ticketController.reserveTicketAndPay);
 
 module.exports = router;
