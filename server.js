@@ -22,9 +22,9 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const exhibitorRoutes = require('./routes/exhibitorRoutes');
-const ticketRoutes = require("./routes/tickets");
+const ticketRoutes = require('./routes/ticketRoutes');
 
-app.use("/tickets", ticketRoutes);
+app.use('/tickets', ticketRoutes);
 app.use('/departments', departmentRoutes);
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);

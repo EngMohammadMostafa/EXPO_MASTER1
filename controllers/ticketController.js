@@ -1,52 +1,79 @@
-const db = require("../models");
-const { TicketReservation, Payment, User, Department } = db;
+// controllers/TicketController.js
+const Ticket = require('../models/Ticket');
+const { v4: uuidv4 } = require('uuid');
 
-exports.reserveTicketAndPay = async (req, res) => {
-  try {
-    const {
-      user_id,
-      department_id,
-      payment_method,
-      amount,
-      payment_type // 'initial' or 'final'
-    } = req.body;
+class TicketController {
 
-    // تحقق من أن المستخدم والقسم موجودان
-    const user = await User.findByPk(user_id);
-    const department = await Department.findByPk(department_id);
+  // إنشاء تذكرة جديدة (دفع وهمي)
+  static async createTicket(req, res) {
+    try {
+      const userId = req.user.id; // افترض أنك تستخدم Middleware للتحقق من المستخدم
+      const { departmentId } = req.body;
 
-    if (!user || !department) {
-      return res.status(404).json({ message: "User or department not found." });
+      if (!departmentId) {
+        return res.status(400).json({ message: "Department ID is required" });
+      }
+
+      // إنشاء تذكرة مع حالة pending ورمز QR عشوائي
+      const ticket = await Ticket.create({
+        userId,
+        departmentId,
+        qrCode: uuidv4(),
+        status: 'pending',
+      });
+
+      return res.status(201).json({
+        message: "Ticket created, please confirm payment to activate.",
+        ticketId: ticket.id,
+        qrCode: ticket.qrCode,
+        status: ticket.status,
+      });
+
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
     }
-
-    // إنشاء رمز QR وهمي (يمكن تغييره لتوليد حقيقي)
-    const qrCode = `QR-${Date.now()}-${user_id}`;
-
-    // إنشاء الحجز
-    const ticket = await TicketReservation.create({
-      user_id,
-      department_id,
-      qr_code: qrCode,
-      payment_method,
-    });
-
-    // إنشاء الدفع
-    const payment = await Payment.create({
-      booking_request_id: ticket.id,
-      amount,
-      payment_type,
-      payment_method,
-      paid_at: new Date(),
-      validated: true,
-    });
-
-    return res.status(201).json({
-      message: "Ticket reserved and payment completed.",
-      ticket,
-      payment,
-    });
-  } catch (error) {
-    console.error("Error in reserveTicketAndPay:", error);
-    return res.status(500).json({ message: "Server error.", error });
   }
-};
+
+  // تأكيد الدفع (وهمي) لتفعيل التذكرة
+  static async confirmPayment(req, res) {
+    try {
+      const { ticketId } = req.body;
+
+      if (!ticketId) {
+        return res.status(400).json({ message: "Ticket ID is required" });
+      }
+
+      const ticket = await Ticket.findByPk(ticketId);
+      if (!ticket) {
+        return res.status(404).json({ message: "Ticket not found" });
+      }
+
+      if (ticket.status === 'paid') {
+        return res.status(400).json({ message: "Ticket already paid" });
+      }
+
+      ticket.status = 'paid';
+      await ticket.save();
+
+      return res.status(200).json({ message: "Payment confirmed, ticket activated.", ticket });
+
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // قائمة التذاكر للمستخدم (اختياري)
+  static async listTickets(req, res) {
+    try {
+      const userId = req.user.id;
+
+      const tickets = await Ticket.findAll({ where: { userId } });
+
+      return res.status(200).json({ tickets });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+}
+
+module.exports = TicketController;
