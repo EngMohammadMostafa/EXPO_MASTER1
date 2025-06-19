@@ -2,6 +2,7 @@ const ExhibitorRequest = require('../models/ExhibitorRequest');
 const Product = require('../models/Product');
 const Section = require('../models/Section');
 const mailService = require('../utils/mailService');
+ 
 
 exports.createRequest = async (req, res) => {
   const { exhibitionName, departmentId, contactPhone, notes } = req.body;
@@ -89,9 +90,23 @@ exports.payFinal = async (req, res) => {
       return res.status(404).json({ message: "طلب العارض غير موجود" });
     }
 
-    request.finalPaymentStatus = 'paid'; // ✅ هذا الحقل موجود في الموديل
-    request.status = 'waiting-approval'; // ✅ موجود
+    request.finalPaymentStatus = 'paid';
+    request.status = 'waiting-approval';
     request.finalPaymentDate = new Date();
+
+    // تحقق إذا لديه جناح مسبقًا
+    const existingSection = await Section.findOne({ where: { exhibitor_id: userId } });
+
+    if (!existingSection) {
+      await Section.create({
+        name: `جناح ${request.exhibitionName}`,
+        departments_id: request.departmentId,
+        exhibitor_id: userId,
+      });
+
+      request.wingAssigned = true; // إشارة أن لديه جناح الآن
+    }
+
     await request.save();
 
     await mailService.sendMail({
@@ -100,11 +115,12 @@ exports.payFinal = async (req, res) => {
       text: 'شكرًا لك، تم استلام دفعتك النهائية وسيتم تأكيد جناحك خلال 24 ساعة.',
     });
 
-    res.json({ message: "تم دفع الدفعة النهائية بنجاح" });
+    res.json({ message: "تم دفع الدفعة النهائية وإنشاء الجناح بنجاح" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 
 exports.addProduct = async (req, res) => {
