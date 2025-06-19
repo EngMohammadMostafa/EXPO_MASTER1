@@ -158,3 +158,32 @@ exports.getMyProducts = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.createWing = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const existing = await Section.findOne({ where: { exhibitor_id: userId } });
+    if (existing) {
+      return res.status(400).json({ message: 'لديك جناح بالفعل' });
+    }
+
+    const request = await ExhibitorRequest.findOne({ where: { userId } });
+    if (!request || request.finalPaymentStatus !== 'paid') {
+      return res.status(400).json({ message: 'لم يتم دفع الدفعة النهائية' });
+    }
+
+    const wing = await Section.create({
+      name: `جناح ${request.exhibitionName}`,
+      departments_id: request.departmentId,
+      exhibitor_id: userId
+    });
+
+    request.wingAssigned = true;
+    await request.save();
+
+    res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', wing });
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء إنشاء الجناح' });
+  }
+};
