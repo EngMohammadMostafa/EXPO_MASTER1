@@ -242,3 +242,32 @@ exports.approveRequest = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.rejectRequest = async (req, res) => {
+  const { requestId } = req.params;
+  const { reason } = req.body;
+
+  try {
+    const request = await ExhibitorRequest.findByPk(requestId);
+    if (!request) {
+      return res.status(404).json({ message: "الطلب غير موجود" });
+    }
+
+    request.status = 'rejected';
+    request.rejectionReason = reason;
+    await request.save();
+
+    const user = await User.findByPk(request.userId);
+    if (user) {
+      await mailService.sendMail({
+        to: user.email,
+        subject: 'تم رفض طلبك',
+        text: `تم رفض طلبك للسبب التالي: ${reason}`,
+      });
+    }
+
+    res.status(200).json({ message: 'تم رفض الطلب بنجاح' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
