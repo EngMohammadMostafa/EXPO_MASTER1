@@ -1,11 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { protect, authorize } = require('../middleware/authMiddleware');
-const { createDepartment,getDepartmentById,updateDepartment, deleteDepartment } = require('../controllers/departmentController');
+const { verifyToken, authorize } = require('../middleware/authMiddleware');
+const {
+  createDepartment,
+  getDepartmentById,
+  updateDepartment,
+  deleteDepartment,
+  getAllDepartments,
+} = require('../controllers/departmentController');
 
-router.post('/', protect, authorize(4), createDepartment);
-router.get('/:id', protect, authorize(4), getDepartmentById);
-router.put('/:id', protect, authorize(4), updateDepartment);
-router.delete('/:id', protect, authorize(4), deleteDepartment);
+// ✅ حماية جميع المسارات والتأكد من أن المستخدم مدير مدينة (userType = 4)
+router.use(verifyToken);
+router.use(authorize(4));
+
+router.get('/', getAllDepartments);
+router.post('/', createDepartment);
+router.get('/:id', getDepartmentById);
+router.put('/:id', updateDepartment);
+router.delete('/:id', deleteDepartment);
 
 module.exports = router;
