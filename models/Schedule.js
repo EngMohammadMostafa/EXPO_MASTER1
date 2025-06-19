@@ -16,4 +16,8 @@ const Schedule = sequelize.define('Schedule', {
   },
 });
 
+// تعريف العلاقة هنا 
+const Department = require('./Department');
+Schedule.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
+
 module.exports = Schedule;
