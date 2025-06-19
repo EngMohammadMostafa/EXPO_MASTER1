@@ -18,3 +18,6 @@ router.post('/pay-initial', exhibitorController.payInitial);
 router.post('/pay-final', exhibitorController.payFinal);
 
 module.exports = router;
+router.post('/add-schedule', exhibitorController.createSchedule);
+router.put('/schedule/:id', exhibitorController.updateSchedule);
+router.delete('/schedule/:id', exhibitorController.deleteSchedule);
