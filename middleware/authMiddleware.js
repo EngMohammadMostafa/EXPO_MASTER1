@@ -22,6 +22,7 @@ exports.verifyToken = async (req, res, next) => {
     res.status(401).json({ message: 'Invalid or expired token.' });
   }
 };
+console.log(" التحقق من التوكن قيد التنفيذ...");
 
 // ✅ تفويض صلاحيات بناءً على userType
 exports.authorize = (...allowedTypes) => {
