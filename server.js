@@ -37,6 +37,7 @@ app.use('/api/schedules', scheduleRoutes);           // واجهات الفعا�
 const PORT = process.env.PORT || 3000;
 
 // مزامنة قاعدة البيانات وتشغيل السيرفر
+sequelize.sync();
 sequelize.sync({ alter: true }).then(() => {
   app.listen(PORT, () => {
     console.log(`✅ Server running on port ${PORT}`);
