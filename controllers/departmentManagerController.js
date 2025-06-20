@@ -270,3 +270,4 @@ const { Section, ExhibitorRequest, User, Department } = require('../models');
       res.status(500).json({ error: error.message });
     }
   };
+  console.log("إنشاء جناح جديد للعارض:", req.body.exhibitor_id);
