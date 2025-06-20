@@ -5,11 +5,28 @@ const Department = require('./Department');
 const Section = require('./Section');
 
 // روابط ExhibitorRequest
-ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-User.hasMany(ExhibitorRequest, { foreignKey: 'userId', as: 'requests' });
+ExhibitorRequest.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
+  constraints: false // ✅ تقليل الضغط على المفاتيح
+});
 
-ExhibitorRequest.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
-ExhibitorRequest.belongsTo(Section, { foreignKey: 'sectionId', as: 'section' });
+User.hasMany(ExhibitorRequest, {
+  foreignKey: 'userId',
+  as: 'requests'
+});
+
+ExhibitorRequest.belongsTo(Department, {
+  foreignKey: 'departmentId',
+  as: 'department',
+  constraints: false // ✅
+});
+
+ExhibitorRequest.belongsTo(Section, {
+  foreignKey: 'sectionId',
+  as: 'section',
+  constraints: false // ✅
+});
 
 module.exports = {
   User,

@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const exhibitorController = require('../controllers/exhibitorController');
 const { verifyExhibitor } = require('../middleware/authMiddleware');
-router.post('/create-wing', authMiddleware, exhibitorController.createWing);
 
-// ✅ حماية المسارات للعارض فقط
+// ✅ حماية إنشاء الجناح فقط للعارض
+router.post('/create-wing', verifyExhibitor, exhibitorController.createWing);
+
+// ✅ حماية باقي المسارات للعارض فقط
 router.use(verifyExhibitor);
 
 // ✅ منتجات العارض
