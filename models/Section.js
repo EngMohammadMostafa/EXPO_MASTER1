@@ -2,6 +2,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 const Department = require('./Department');
 const User = require('./User');
+const Schedule = require('./Schedule');
 
 const Section = sequelize.define('Section', {
   name: {
@@ -18,5 +19,20 @@ const Section = sequelize.define('Section', {
   },
 });
 
+// العلاقات
+Section.belongsTo(Department, {
+  foreignKey: 'departments_id',
+  as: 'department'
+});
+
+Section.belongsTo(User, {
+  foreignKey: 'exhibitor_id',
+  as: 'exhibitor'
+});
+
+Section.hasMany(Schedule, {
+  foreignKey: 'sectionId',
+  as: 'schedules'
+});
 
 module.exports = Section;
