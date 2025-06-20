@@ -64,7 +64,9 @@ exports.deleteDepartment = async (req, res) => {
 
 exports.getAllDepartments = async (req, res) => {
   try {
-    const departments = await Department.findAll();
+     console.log("Fetching all departments...");
+const departments = await Department.findAll();
+
     res.status(200).json({ departments });
   } catch (error) {
     res.status(500).json({ error: error.message });
