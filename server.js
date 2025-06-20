@@ -1,6 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/db');
+const scheduleRoutes = require('./routes/scheduleRoutes');
+
+app.use('/api/schedules', scheduleRoutes);
+
 require('dotenv').config();
 
 const app = express();
