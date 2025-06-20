@@ -1,3 +1,4 @@
+// models/Schedule.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 const Department = require('./Department');
