@@ -33,10 +33,15 @@ exports.getSchedulesByDepartment = async (req, res) => {
   try {
     const schedules = await Schedule.findAll({
       where: { departmentId },
-      include: ['section']
+      include: [{
+        model: Section,
+        as: 'section',
+        attributes: ['id', 'name', 'exhibitor_id']
+      }],
+      order: [['eventDate', 'ASC']]
     });
 
-    res.json({ schedules });
+    res.status(200).json({ schedules });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
