@@ -27,12 +27,11 @@ const exhibitorRoutes = require('./routes/exhibitorRoutes');
 const scheduleRoutes = require('./routes/scheduleRoutes');
 
 // تسجيل الراوتس مع إضافة تعليقات تفصيلية
-app.use('/departments', departmentRoutes);          // إدارة الأقسام
 app.use('/auth', authRoutes);                        // عمليات التسجيل وتسجيل الدخول
 app.use('/admin', adminRoutes);                      // واجهات مدير النظام
 app.use('/api/exhibitor', exhibitorRoutes);         // واجهات العارضين
+app.use('/departments', departmentRoutes);          // إدارة الأقسام
 app.use('/api/schedules', scheduleRoutes);           // واجهات الفعاليات (الجدول)
-
 // تحديد المنفذ
 const PORT = process.env.PORT || 3000;
 
