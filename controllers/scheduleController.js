@@ -1,13 +1,17 @@
 const Schedule = require('../models/Schedule');
 const Section = require('../models/Section');
 
+// إنشاء فعالية جديدة مرتبطة بالقسم والجناح
 exports.createSchedule = async (req, res) => {
   const { departmentId, eventTitle, eventDate } = req.body;
   const exhibitorId = req.user.id;
 
   try {
     const section = await Section.findOne({
-      where: { exhibitor_id: exhibitorId, departments_id: departmentId }
+      where: {
+        exhibitor_id: exhibitorId,
+        departments_id: departmentId
+      }
     });
 
     if (!section) {
@@ -27,6 +31,7 @@ exports.createSchedule = async (req, res) => {
   }
 };
 
+// جلب جميع الفعاليات المرتبطة بقسم معين
 exports.getSchedulesByDepartment = async (req, res) => {
   const { departmentId } = req.params;
 
