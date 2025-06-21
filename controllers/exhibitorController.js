@@ -3,18 +3,14 @@ const Product = require('../models/Product');
 const Section = require('../models/Section');
 const mailService = require('../utils/mailService');
 const Schedule = require('../models/Schedule');
-const { id } = req.params;
-const { eventTitle, eventDate } = req.body;
-const exhibitorId = req.user.id;
 
-
-
+// إرسال طلب انضمام كعارض
 exports.createRequest = async (req, res) => {
   const { exhibitionName, departmentId, contactPhone, notes } = req.body;
   const userId = req.user.id;
 
   try {
-    const existing = await ExhibitorRequest.findOne({ 
+    const existing = await ExhibitorRequest.findOne({
       where: { userId },
       order: [['createdAt', 'DESC']]
     });
@@ -40,6 +36,7 @@ exports.createRequest = async (req, res) => {
   }
 };
 
+// دفع الدفعة الأولى
 exports.payInitial = async (req, res) => {
   const userId = req.user.id;
 
@@ -65,6 +62,7 @@ exports.payInitial = async (req, res) => {
   }
 };
 
+// تتبع حالة الطلب
 exports.trackRequest = async (req, res) => {
   const userId = req.user.id;
 
@@ -86,6 +84,7 @@ exports.trackRequest = async (req, res) => {
   }
 };
 
+// دفع الدفعة النهائية وإنشاء الجناح إن لم يوجد
 exports.payFinal = async (req, res) => {
   const userId = req.user.id;
 
@@ -104,7 +103,7 @@ exports.payFinal = async (req, res) => {
 
     if (!existingSection) {
       await Section.create({
-        name:` جناح ${request.exhibitionName}`,
+        name: `جناح ${request.exhibitionName}`,
         departments_id: request.departmentId,
         exhibitor_id: userId,
       });
@@ -126,8 +125,7 @@ exports.payFinal = async (req, res) => {
   }
 };
 
-
-
+// إضافة منتج جديد
 exports.addProduct = async (req, res) => {
   const { productName, description, price, imageUrl } = req.body;
   const userId = req.user.id;
@@ -139,11 +137,12 @@ exports.addProduct = async (req, res) => {
     }
 
     const product = await Product.create({
-     productName ,
-     description,
-     price,
-     exhibitorId: userId,
-     sectionId: section.id
+      productName,
+      description,
+      price,
+      imageUrl,
+      exhibitorId: userId,
+      sectionId: section.id
     });
 
     res.status(201).json({ message: 'تم إضافة المنتج بنجاح', product });
@@ -151,136 +150,152 @@ exports.addProduct = async (req, res) => {
     res.status(500).json({ error: 'حدث خطأ أثناء إضافة المنتج' });
   }
 };
+
+// جلب منتجات العارض
 exports.getMyProducts = async (req, res) => {
-    const exhibitorId = req.user.id;
-  
-    try {
-      const products = await Product.findAll({ where: { exhibitor_id: exhibitorId } });
-  
-      res.status(200).json({ products });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+  const userId = req.user.id;
+
+  try {
+    const products = await Product.findAll({ where: { exhibitorId: userId } });
+    res.status(200).json({ products });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// إنشاء الجناح يدويًا (إن لم يكن موجودًا)
+exports.createWing = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const existing = await Section.findOne({ where: { exhibitor_id: userId } });
+    if (existing) {
+      return res.status(400).json({ message: 'لديك جناح بالفعل' });
     }
-  };
-  
-  exports.createWing = async (req, res) => {
-    const userId = req.user.id;
-  
-    try {
-      const existing = await Section.findOne({ where: { exhibitor_id: userId } });
-      if (existing) {
-        return res.status(400).json({ message: 'لديك جناح بالفعل' });
-      }
-  
-      const request = await ExhibitorRequest.findOne({ where: { userId } });
-      if (!request || request.finalPaymentStatus !== 'paid') {
-        return res.status(400).json({ message: 'لم يتم دفع الدفعة النهائية' });
-      }
-  
-      const wing = await Section.create({
-        name:` جناح ${request.exhibitionName}`,
-        departments_id: request.departmentId,
-        exhibitor_id: userId
-      });
-  
-      request.wingAssigned = true;
-      await request.save();
-  
-      res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', wing });
-    } catch (err) {
-      res.status(500).json({ error: 'حدث خطأ أثناء إنشاء الجناح' });
+
+    const request = await ExhibitorRequest.findOne({ where: { userId } });
+    if (!request || request.finalPaymentStatus !== 'paid') {
+      return res.status(400).json({ message: 'لم يتم دفع الدفعة النهائية' });
     }
-  };
-  exports.createSchedule = async (req, res) => {
-    const { departmentId, eventTitle, eventDate } = req.body;
-    const exhibitorId = req.user.id;
-  
-    try {
-      // تحقق أن العارض يمتلك جناحاً في القسم المحدد
-      const section = await Section.findOne({
-        where: {
-          exhibitor_id: exhibitorId,
-          departments_id: departmentId
-        }
-      });
-  
-      if (!section) {
-        return res.status(403).json({ message: 'لا يمكنك إنشاء فعالية في هذا القسم' });
+
+    const wing = await Section.create({
+      name: `جناح ${request.exhibitionName}`,
+      departments_id: request.departmentId,
+      exhibitor_id: userId
+    });
+
+    request.wingAssigned = true;
+    await request.save();
+
+    res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', wing });
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء إنشاء الجناح' });
+  }
+};
+
+// إنشاء فعالية
+exports.createSchedule = async (req, res) => {
+  const { departmentId, eventTitle, eventDate } = req.body;
+  const exhibitorId = req.user.id;
+
+  try {
+    const section = await Section.findOne({
+      where: {
+        exhibitor_id: exhibitorId,
+        departments_id: departmentId
       }
-  
-      const schedule = await Schedule.create({
-        departmentId,
-        eventTitle,
-        eventDate
-      });
-  
-      res.status(201).json({ message: 'تم إنشاء الفعالية بنجاح', schedule });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    });
+
+    if (!section) {
+      return res.status(403).json({ message: 'لا يمكنك إنشاء فعالية في هذا القسم' });
     }
-  };
-  exports.updateSchedule = async (req, res) => {
-    try {
-        // نحصل على الفعالية
-        const schedule = await Schedule.findByPk(id);
-        if (!schedule) return res.status(404).json({ message: 'الفعالية غير موجودة' });
-    
-        // تحقق أن العارض يمتلك جناحاً في القسم المرتبط بالفعالية
-        const section = await Section.findOne({
-          where: {
-            exhibitor_id: exhibitorId,
-            departments_id: schedule.departmentId
-          }
-        });
-    
-        if (!section) {
-          return res.status(403).json({ message: 'لا تملك صلاحية تعديل هذه الفعالية' });
-        }
-    
-        schedule.eventTitle = eventTitle || schedule.eventTitle;
-        schedule.eventDate = eventDate || schedule.eventDate;
-    
-        await schedule.save();
-    
-        res.json({ message: 'تم تعديل الفعالية بنجاح', schedule });
-      } catch (error) {
-        res.status(500).json({ error: error.message });
+
+    const schedule = await Schedule.create({
+      departmentId,
+      eventTitle,
+      eventDate
+    });
+
+    res.status(201).json({ message: 'تم إنشاء الفعالية بنجاح', schedule });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// تعديل فعالية
+exports.updateSchedule = async (req, res) => {
+  const { id } = req.params;
+  const { eventTitle, eventDate } = req.body;
+  const exhibitorId = req.user.id;
+
+  try {
+    const schedule = await Schedule.findByPk(id);
+    if (!schedule) return res.status(404).json({ message: 'الفعالية غير موجودة' });
+
+    const section = await Section.findOne({
+      where: {
+        exhibitor_id: exhibitorId,
+        departments_id: schedule.departmentId
       }
-    };
-    exports.deleteSchedule = async (req, res) => {
-        try {
-            const schedule = await Schedule.findByPk(id);
-            if (!schedule) return res.status(404).json({ message: 'الفعالية غير موجودة' });
-        
-            const section = await Section.findOne({
-              where: {
-                exhibitor_id: exhibitorId,
-                departments_id: schedule.departmentId
-              }
-            });
-        
-            if (!section) {
-              return res.status(403).json({ message: 'لا تملك صلاحية حذف هذه الفعالية' });
-            }
-        
-            await schedule.destroy();
-        
-            res.json({ message: 'تم حذف الفعالية بنجاح' });
-          } catch (error) {
-            res.status(500).json({ error: error.message });
-          }
-        };
-        exports.getMySchedules = async (req, res) => {
-            try {
-                const sections = await Section.findAll({ where: { exhibitor_id: exhibitorId } });
-                const departmentIds = sections.map(sec => sec.departments_id);
-            
-                const schedules = await Schedule.findAll({
-                  where: { departmentId: departmentIds }
-                });
-            
-                res.json({ schedules });
-              } catch (error) {
-                res.status(500).json({ error: error.message });
-              }
-            };
+    });
+
+    if (!section) {
+      return res.status(403).json({ message: 'لا تملك صلاحية تعديل هذه الفعالية' });
+    }
+
+    schedule.eventTitle = eventTitle || schedule.eventTitle;
+    schedule.eventDate = eventDate || schedule.eventDate;
+
+    await schedule.save();
+
+    res.json({ message: 'تم تعديل الفعالية بنجاح', schedule });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// حذف فعالية
+exports.deleteSchedule = async (req, res) => {
+  const { id } = req.params;
+  const exhibitorId = req.user.id;
+
+  try {
+    const schedule = await Schedule.findByPk(id);
+    if (!schedule) return res.status(404).json({ message: 'الفعالية غير موجودة' });
+
+    const section = await Section.findOne({
+      where: {
+        exhibitor_id: exhibitorId,
+        departments_id: schedule.departmentId
+      }
+    });
+
+    if (!section) {
+      return res.status(403).json({ message: 'لا تملك صلاحية حذف هذه الفعالية' });
+    }
+
+    await schedule.destroy();
+
+    res.json({ message: 'تم حذف الفعالية بنجاح' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// جلب فعاليات العارض المرتبطة بأقسامه
+exports.getMySchedules = async (req, res) => {
+  const exhibitorId = req.user.id;
+
+  try {
+    const sections = await Section.findAll({ where: { exhibitor_id: exhibitorId } });
+    const departmentIds = sections.map(sec => sec.departments_id);
+
+    const schedules = await Schedule.findAll({
+      where: { departmentId: departmentIds }
+    });
+
+    res.json({ schedules });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
