@@ -3,6 +3,7 @@ const Product = require('../models/Product');
 const Section = require('../models/Section');
 const mailService = require('../utils/mailService');
 const Schedule = require('../models/Schedule');
+const { Op } = require('sequelize');
 
 // إرسال طلب انضمام كعارض
 exports.createRequest = async (req, res) => {
@@ -291,7 +292,7 @@ exports.getMySchedules = async (req, res) => {
     const departmentIds = sections.map(sec => sec.departments_id);
 
     const schedules = await Schedule.findAll({
-      where: { departmentId: departmentIds }
+      where: { departmentId: { [Op.in]: departmentIds } }
     });
 
     res.json({ schedules });
