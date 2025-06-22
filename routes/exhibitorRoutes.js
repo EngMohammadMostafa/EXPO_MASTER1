@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const exhibitorController = require('../controllers/exhibitorController');
 const { verifyExhibitor } = require('../middleware/authMiddleware');
+const { getDepartmentsForExhibitor } = require('../controllers/exhibitorController');
+
+
+router.get('/departments', getDepartmentsForExhibitor);
 
 // ✅ حماية إنشاء الجناح فقط للعارض
 router.post('/create-wing', verifyExhibitor, exhibitorController.createWing);
