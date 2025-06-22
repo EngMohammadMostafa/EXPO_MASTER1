@@ -1,30 +1,32 @@
-// models/Schedule.js
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
-const Department = require('./Department');
-const Section = require('./Section');
+const { DataTypes } = require('sequelize');  // استيراد أنواع البيانات من Sequelize
+const sequelize = require('../config/db');   // استيراد إعداد الاتصال بقاعدة البيانات
+const Department = require('./Department');  // استيراد موديل القسم
+const Section = require('./Section');        // استيراد موديل الجناح (القسم الفرعي)
 
-
+// تعريف موديل Schedule (الفعالية أو الجدول الزمني)
 const Schedule = sequelize.define('Schedule', {
-  departmentId: {
+  departmentId: {                            // مفتاح أجنبي يشير لقسم الفعالية
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: false,                        // مطلوب وجوده دائماً
   },
-  sectionId: {
+  sectionId: {                              // مفتاح أجنبي يشير للجناح أو القسم الفرعي
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: false,                        // مطلوب دائماً
   },
-  eventTitle: {
+  eventTitle: {                             // عنوان الفعالية
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: false,                        // مطلوب
   },
-  eventDate: {
+  eventDate: {                             // تاريخ ووقت الفعالية
     type: DataTypes.DATE,
-    allowNull: false,
+    allowNull: false,                        // مطلوب
   },
 });
 
+// تعريف علاقة belongsTo مع موديل Department عبر المفتاح departmentId
 Schedule.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
+
+// تعريف علاقة belongsTo مع موديل Section عبر المفتاح sectionId
 Schedule.belongsTo(Section, { foreignKey: 'sectionId', as: 'section' });
 
-module.exports = Schedule;
+module.exports = Schedule;  // تصدير الموديل للاستخدام في أماكن أخرى
