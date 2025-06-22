@@ -4,7 +4,7 @@ const ExhibitorRequest = require('./ExhibitorRequest');
 const Department = require('./Department');
 const Section = require('./Section');
 
-// روابط ExhibitorRequest
+// علاقات ExhibitorRequest مع المستخدم، القسم، والجناح
 ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(ExhibitorRequest, { foreignKey: 'userId', as: 'requests' });
 
