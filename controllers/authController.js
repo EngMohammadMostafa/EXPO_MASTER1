@@ -2,7 +2,6 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-
 exports.register = async (req, res) => {
   let { name, email, password, userType } = req.body;
 
@@ -15,6 +14,11 @@ exports.register = async (req, res) => {
     // ✅ منع التلاعب: إذا كان من مسار إنشاء المدير، ثبّت نوع المستخدم = 3
     if (req.originalUrl.includes('/admin/create-manager')) {
       userType = 3;
+    }
+
+    // ✅ تعيين userType = 2 إذا جاء التسجيل من واجهة العارض (مثلاً من /auth/register-exhibitor)
+    if (req.originalUrl.includes('/register-exhibitor')) {
+      userType = 2;
     }
 
     const newUser = await User.create({
@@ -37,7 +41,6 @@ exports.register = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
  exports.login = async (req, res) => {
   const { email, password } = req.body;
