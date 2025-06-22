@@ -39,7 +39,7 @@ ExhibitorRequest.init({
   },
   finalPaymentDate: {
     type: DataTypes.DATE,
-    allowNull: false
+    allowNull: true
   }
 }, {
   sequelize,
