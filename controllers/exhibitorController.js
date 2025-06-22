@@ -3,6 +3,8 @@ const ExhibitorRequest = require('../models/ExhibitorRequest');
 const Product = require('../models/Product');
 const Section = require('../models/Section');
 const mailService = require('../utils/mailService');
+const Department = require('../models/Department');
+
 
 exports.createRequest = async (req, res) => {
   const { exhibitionName, departmentId, contactPhone, notes } = req.body;
@@ -187,5 +189,16 @@ exports.createWing = async (req, res) => {
     res.status(201).json({ message: 'تم إنشاء الجناح بنجاح', wing });
   } catch (err) {
     res.status(500).json({ error: 'حدث خطأ أثناء إنشاء الجناح' });
+  }
+};
+
+exports.getDepartmentsForExhibitor = async (req, res) => {
+  try {
+    const departments = await Department.findAll({
+      attributes: ['id', 'name', 'description', 'startDate', 'endDate']
+    });
+    res.status(200).json({ departments });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
