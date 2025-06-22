@@ -1,18 +1,31 @@
-const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/db');
+const { DataTypes, Model } = require('sequelize');  // استيراد Model وأنواع البيانات من Sequelize
+const sequelize = require('../config/db');         // استيراد اتصال قاعدة البيانات
 
+// تعريف الكلاس User كـ Model
 class User extends Model {}
 
+// تهيئة موديل User مع الحقول والخصائص
 User.init({
-  name: 
-  { 
-    type: DataTypes.STRING, allowNull: false },
-  email: { type: DataTypes.STRING, unique: true, allowNull: false },
-  password: { type: DataTypes.STRING },
-  userType: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 }
+  name: {                           // اسم المستخدم (إلزامي)
+    type: DataTypes.STRING, 
+    allowNull: false 
+  },
+  email: {                          // البريد الإلكتروني (إلزامي ويجب أن يكون فريد)
+    type: DataTypes.STRING, 
+    unique: true, 
+    allowNull: false 
+  },
+  password: {                      // كلمة المرور (اختياري هنا، عادة تكون مطلوبة)
+    type: DataTypes.STRING 
+  },
+  userType: {                     // نوع المستخدم (رقم يمثل الصلاحية، افتراضياً 1)
+    type: DataTypes.INTEGER, 
+    allowNull: false, 
+    defaultValue: 1 
+  }
 }, {
-  sequelize,
-  modelName: 'User'
+  sequelize,                      // ربط الموديل باتصال قاعدة البيانات
+  modelName: 'User'              // اسم الموديل داخل Sequelize
 });
 
-module.exports = User;
+module.exports = User;            // تصدير الموديل للاستخدام في باقي التطبيق
