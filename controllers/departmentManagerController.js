@@ -1,5 +1,8 @@
-  const { Section, ExhibitorRequest, User, Department } = require('../models');
-  const mailService = require('../utils/mailService');
+const Section = require('../models/Section');
+const ExhibitorRequest = require('../models/ExhibitorRequest');
+const User = require('../models/User');
+const Department = require('../models/Department');
+const mailService = require('../utils/mailService');
 
   // 1. جلب كل الأجنحة في القسم الخاص بمدير القسم
   exports.getSectionsByDepartment = async (req, res) => {
@@ -254,7 +257,7 @@
       }
 
       request.status = 'rejected';
-      request.rejectionReason = reason;
+      request.rejectionReason = reason; 
       await request.save();
 
       const user = await User.findByPk(request.userId);
