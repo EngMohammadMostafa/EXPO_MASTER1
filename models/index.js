@@ -3,6 +3,7 @@ const Department = require('./Department');
 const Section = require('./Section');
 const ExhibitorRequest = require('./ExhibitorRequest');
 const Product = require('./Product');
+const Ticket = require('./Ticket');
 
 // علاقات ExhibitorRequest
 User.hasMany(ExhibitorRequest, { foreignKey: 'userId', as: 'exhibitorRequestsByUser' });
@@ -21,10 +22,19 @@ Product.belongsTo(User, { foreignKey: 'exhibitorId', as: 'exhibitor' });
 Section.hasMany(Product, { foreignKey: 'sectionId', as: 'products' });
 Product.belongsTo(Section, { foreignKey: 'sectionId', as: 'productSection' });
 
+// علاقات Ticket
+User.hasMany(Ticket, { foreignKey: 'userId', as: 'tickets' });
+Ticket.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+Department.hasMany(Ticket, { foreignKey: 'departmentId', as: 'tickets' });
+Ticket.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
+
+
 module.exports = {
   User,
   Department,
   Section,
   ExhibitorRequest,
-  Product
+  Product,
+   Ticket
 };
