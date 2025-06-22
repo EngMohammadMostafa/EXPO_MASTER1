@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const exhibitorController = require('../controllers/exhibitorController');
 const { verifyExhibitor } = require('../middleware/authMiddleware');
-router.post('/create-wing', authMiddleware, exhibitorController.createWing);
 
-// ✅ حماية المسارات للعارض فقط
+// ✅ مسار إنشاء الجناح - تحتاج حماية بواسطة verifyExhibitor بدل authMiddleware الغير معرف
+router.post('/create-wing', verifyExhibitor, exhibitorController.createWing);
+
+// ✅ حماية كل الراوتات التالية للعارض فقط
 router.use(verifyExhibitor);
 
 // ✅ منتجات العارض
@@ -17,8 +19,10 @@ router.get('/track-request', exhibitorController.trackRequest);
 router.post('/pay-initial', exhibitorController.payInitial);
 router.post('/pay-final', exhibitorController.payFinal);
 
-module.exports = router;
+// ✅ إدارة الفعاليات (الجدول)
 router.post('/add-schedule', exhibitorController.createSchedule);
 router.put('/schedule/:id', exhibitorController.updateSchedule);
 router.delete('/schedule/:id', exhibitorController.deleteSchedule);
 router.get('/my-schedules', exhibitorController.getMySchedules);
+
+module.exports = router;
