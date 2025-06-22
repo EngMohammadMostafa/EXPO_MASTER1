@@ -1,5 +1,6 @@
 const Schedule = require('../models/Schedule');
 const Section = require('../models/Section');
+const { Op } = require('sequelize');
 
 // إنشاء فعالية جديدة مرتبطة بالقسم والجناح
 exports.createSchedule = async (req, res) => {
@@ -7,6 +8,7 @@ exports.createSchedule = async (req, res) => {
   const exhibitorId = req.user.id;
 
   try {
+    // التأكد أن العارض يملك جناح مرتبط بالقسم المطلوب
     const section = await Section.findOne({
       where: {
         exhibitor_id: exhibitorId,
@@ -18,6 +20,7 @@ exports.createSchedule = async (req, res) => {
       return res.status(403).json({ message: 'لا يمكنك إنشاء فعالية في هذا القسم' });
     }
 
+    // إنشاء الفعالية وربطها بالقسم والجناح
     const schedule = await Schedule.create({
       departmentId,
       sectionId: section.id,
@@ -31,7 +34,7 @@ exports.createSchedule = async (req, res) => {
   }
 };
 
-// جلب جميع الفعاليات المرتبطة بقسم معين
+// جلب جميع الفعاليات المرتبطة بقسم معين مع بيانات الجناح
 exports.getSchedulesByDepartment = async (req, res) => {
   const { departmentId } = req.params;
 
