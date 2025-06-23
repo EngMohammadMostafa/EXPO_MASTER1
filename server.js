@@ -31,6 +31,7 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/api/exhibitor', exhibitorRoutes);
 app.use('/api/department-manager', departmentManagerRoutes);
+app.use('/api/visitor', require('./routes/visitorRoutes'));
 
 const PORT = process.env.PORT || 3000;
 
