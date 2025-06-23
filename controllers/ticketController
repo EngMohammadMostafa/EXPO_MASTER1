@@ -1,0 +1,20 @@
+const Ticket = require('../models/Ticket');
+
+exports.buyTicket = async (req, res) => {
+  try {
+    const { departmentId } = req.body;
+    const userId = req.user.id;
+
+    // تحقق من وجود تذكرة مسبقة
+    const existing = await Ticket.findOne({ where: { userId, departmentId } });
+    if (existing) {
+      return res.status(400).json({ message: "You already own a ticket for this department." });
+    }
+
+    const ticket = await Ticket.create({ userId, departmentId });
+    res.status(201).json({ message: "Ticket purchased successfully", ticket });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
