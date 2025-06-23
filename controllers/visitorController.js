@@ -11,3 +11,14 @@ exports.getSectionsByDepartment = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// ✅ عرض المنتجات داخل جناح معين
+exports.getProductsBySection = async (req, res) => {
+  try {
+    const { sectionId } = req.params;
+    const products = await Product.findAll({ where: { sectionId } });
+    res.status(200).json({ products });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
