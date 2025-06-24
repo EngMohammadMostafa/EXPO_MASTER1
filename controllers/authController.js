@@ -11,12 +11,10 @@ exports.register = async (req, res) => {
 
     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
 
-    // ✅ منع التلاعب: إذا كان من مسار إنشاء المدير، ثبّت نوع المستخدم = 3
     if (req.originalUrl.includes('/admin/create-manager')) {
       userType = 3;
     }
 
-    // ✅ تعيين userType = 2 إذا جاء التسجيل من واجهة العارض (مثلاً من /auth/register-exhibitor)
     if (req.originalUrl.includes('/register-exhibitor')) {
       userType = 2;
     }
@@ -26,7 +24,7 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       userType
-    }); 
+    });
 
     if (userType === 3) {
       return res.status(201).json({
@@ -35,12 +33,54 @@ exports.register = async (req, res) => {
       });
     }
 
-    res.status(201).json({ message: "User registered successfully", user: newUser });
+    // فقط ترجع بيانات محدودة بدون كلمة المرور
+    const { id } = newUser;
+    res.status(201).json({ message: "User registered successfully", user: { id, name, email, userType } });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+// exports.register = async (req, res) => {
+//   let { name, email, password, userType } = req.body;
+
+//   try {
+//     const existingUser = await User.findOne({ where: { email } });
+//     if (existingUser) return res.status(400).json({ message: "Email already exists" });
+
+//     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+
+//     // ✅ منع التلاعب: إذا كان من مسار إنشاء المدير، ثبّت نوع المستخدم = 3
+//     if (req.originalUrl.includes('/admin/create-manager')) {
+//       userType = 3;
+//     }
+
+//     // ✅ تعيين userType = 2 إذا جاء التسجيل من واجهة العارض (مثلاً من /auth/register-exhibitor)
+//     if (req.originalUrl.includes('/register-exhibitor')) {
+//       userType = 2;
+//     }
+
+//     const newUser = await User.create({
+//       name,
+//       email,
+//       password: hashedPassword,
+//       userType
+//     }); 
+
+//     if (userType === 3) {
+//       return res.status(201).json({
+//         message: "تم إنشاء مدير القسم بنجاح.",
+//         managerId: newUser.id
+//       });
+//     }
+
+//     res.status(201).json({ message: "User registered successfully", user: newUser });
+
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
 
  exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -119,7 +159,7 @@ exports.verifyToken = async (req, res, next) => {
   try {
     token = token.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findByPk(decoded.id);
+    const user = await User.findByPk(decoded.id); 
 
     if (!user) return res.status(401).json({ message: 'User not found.' });
 
