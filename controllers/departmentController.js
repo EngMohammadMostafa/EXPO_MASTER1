@@ -1,6 +1,4 @@
 const Department = require('../models/Department');
-
- 
 exports.createDepartment = async (req, res) => {
   try {
     const { name, startDate, endDate, manager_id, description } = req.body;
