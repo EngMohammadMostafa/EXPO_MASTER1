@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 const { register } = require('../controllers/authController');
-// استيراد verifyToken و authorize بالاسم الصحيح
 const { verifyToken, authorize } = require('../middleware/authMiddleware');
 
 router.post('/create-manager', verifyToken, authorize(4), register);
