@@ -1,29 +1,15 @@
-// استيراد كائن Sequelize من مكتبة sequelize
 const { Sequelize } = require('sequelize');
-
-// تحميل المتغيرات البيئية من ملف .env
 require('dotenv').config();
 
-// إنشاء كائن الاتصال بقاعدة البيانات باستخدام Sequelize
 const sequelize = new Sequelize(
-  process.env.DB_NAME,     // اسم قاعدة البيانات
-  process.env.DB_USER,     // اسم المستخدم
-  process.env.DB_PASSWORD, // كلمة المرور
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
   {
-    host: process.env.DB_HOST, // المضيف (عادة localhost أو IP)
-    dialect: 'mysql',          // نوع قاعدة البيانات
-    logging: false             // إيقاف إظهار استعلامات SQL في الكونسول
+    host: process.env.DB_HOST,
+    dialect: 'mysql',
+    logging: false
   }
 );
 
-// اختبار الاتصال بقاعدة البيانات
-sequelize.authenticate()
-  .then(() => {
-    console.log('✅ Connection to the database has been established successfully.');
-  })
-  .catch(err => {
-    console.error('❌ Unable to connect to the database:', err);
-  });
-
-// تصدير كائن sequelize لاستخدامه في أجزاء أخرى من التطبيق
 module.exports = sequelize;

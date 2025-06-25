@@ -1,5 +1,8 @@
-const { Section, ExhibitorRequest, User, Department } = require('../models');
-  const mailService = require('../utils/mailService');
+const Section = require('../models/Section');
+const ExhibitorRequest = require('../models/ExhibitorRequest');
+const User = require('../models/User');
+const Department = require('../models/Department');
+const mailService = require('../utils/mailService');
 
   // 1. جلب كل الأجنحة في القسم الخاص بمدير القسم
   exports.getSectionsByDepartment = async (req, res) => {
@@ -81,57 +84,6 @@ const { Section, ExhibitorRequest, User, Department } = require('../models');
     }
   };
 
-  // 7. قبول طلب عارض
-  exports.acceptExhibitorRequest = async (req, res) => {
-    try {
-      const requestId = req.params.id;
-      const request = await ExhibitorRequest.findByPk(requestId, {
-        include: [{ model: User }]
-      });
-
-      if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
-
-      request.status = 'approved';
-      await request.save();
-
-      await mailService.sendMail({
-        to: request.User.email,
-        subject: 'تم قبول طلبك',
-        text: 'تم قبول طلبك، الرجاء إكمال الدفعة النهائية لتثبيت الحجز.'
-      });
-
-      res.json({ message: 'تم قبول الطلب بنجاح' });
-    } catch (err) {
-      res.status(500).json({ error: 'فشل قبول الطلب' });
-    }
-  };
-
-  // 8. رفض طلب عارض
-  exports.rejectExhibitorRequest = async (req, res) => {
-    try {
-      const requestId = req.params.id;
-      const { reason } = req.body;
-
-      const request = await ExhibitorRequest.findByPk(requestId, {
-        include: [{ model: User }],
-      });
-
-      if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
-
-      request.status = 'rejected';
-      await request.save();
-
-      await mailService.sendMail({
-        to: request.User.email,
-        subject: 'تم رفض طلبك',
-        text:`   نأسف، تم رفض طلبك. السبب: ${reason}`,
-      });
-
-      res.json({ message: 'تم رفض الطلب وإرسال السبب للعارض' });
-    } catch (err) {
-      res.status(500).json({ error: 'فشل رفض الطلب' });
-    }
-  };
   // قبول طلب عارض
   exports.acceptExhibitorRequest = async (req, res) => {
     const request = await ExhibitorRequest.findByPk(req.params.id, { include: [{ model: User }] });
@@ -162,12 +114,11 @@ const { Section, ExhibitorRequest, User, Department } = require('../models');
     await mailService.sendMail({
       to: request.User.email,
       subject: 'تم رفض طلبك',
-      text:`  نأسف، تم رفض طلبك. السبب: ${reason}`,
+      text:` نأسف، تم رفض طلبك. السبب: ${reason}`,
     });
 
     res.json({ message: 'تم رفض الطلب وإرسال سبب الرفض.' });
   };
-
   exports.filterRequestsByStatus = async (req, res) => {
     const departmentId = req.user.departmentId;
     const { status } = req.query; // 'approved' أو 'rejected' أو 'waiting-approval'
@@ -211,63 +162,50 @@ const { Section, ExhibitorRequest, User, Department } = require('../models');
   };
 
 
-  exports.approveRequest = async (req, res) => {
-    const { requestId } = req.params;
+ exports.approveRequest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const request = await ExhibitorRequest.findByPk(requestId);
 
-    try {
-      const request = await ExhibitorRequest.findByPk(requestId);
-      if (!request) {
-        return res.status(404).json({ message: "الطلب غير موجود" });
-      }
+    if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
 
-      if (request.status === 'approved') {
-        return res.status(400).json({ message: 'الطلب تمت الموافقة عليه مسبقًا' });
-      }
+    request.status = 'مقبول';
+    await request.save();
 
-      request.status = 'approved';
-      await request.save();
+    // ✅ إرسال إيميل الموافقة
+    const exhibitor = await User.findByPk(request.exhibitorId);
+    await mailService.send({
+      to: exhibitor.email,
+      subject: "تم قبول طلبك",
+      text: "تهانينا! تم قبول طلب العرض الخاص بك. يمكنك الآن دفع الدفعة النهائية."
+    });
 
-      const user = await User.findByPk(request.userId);
-      if (user) {
-        await mailService.sendMail({
-          to: user.email,
-          subject: 'تمت الموافقة على طلبك',
-          text: 'يمكنك الآن دفع الدفعة النهائية وإنشاء جناحك.',
-        });
-      }
+    res.json({ message: 'تم قبول الطلب بنجاح' });
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء قبول الطلب' });
+  }
+};
 
-      res.status(200).json({ message: 'تمت الموافقة على الطلب' });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
+exports.rejectRequest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
+    const request = await ExhibitorRequest.findByPk(requestId);
 
-  exports.rejectRequest = async (req, res) => {
-    const { requestId } = req.params;
-    const { reason } = req.body;
+    if (!request) return res.status(404).json({ message: 'الطلب غير موجود' });
 
-    try {
-      const request = await ExhibitorRequest.findByPk(requestId);
-      if (!request) {
-        return res.status(404).json({ message: "الطلب غير موجود" });
-      }
+    request.status = 'مرفوض';
+    await request.save();
 
-      request.status = 'rejected';
-      request.rejectionReason = reason;
-      await request.save();
+    // ✅ إرسال إيميل بالرفض
+    const exhibitor = await User.findByPk(request.exhibitorId);
+    await mailService.send({
+      to: exhibitor.email,
+      subject: "رفض طلب العرض",
+      text: "نأسف لإبلاغك أن طلبك تم رفضه. يمكنك تقديم طلب جديد لاحقًا."
+    });
 
-      const user = await User.findByPk(request.userId);
-      if (user) {
-        await mailService.sendMail({
-          to: user.email,
-          subject: 'تم رفض طلبك',
-          text:`  تم رفض طلبك للسبب التالي: ${reason}`,
-        });
-      }
-
-      res.status(200).json({ message: 'تم رفض الطلب بنجاح' });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-  console.log("إنشاء جناح جديد للعارض:", req.body.exhibitor_id);
+    res.json({ message: 'تم رفض الطلب بنجاح' });
+  } catch (err) {
+    res.status(500).json({ error: 'حدث خطأ أثناء رفض الطلب' });
+  }
+};
