@@ -6,19 +6,23 @@ exports.register = async (req, res) => {
   let { name, email, password, userType } = req.body;
 
   try {
+    // تحقق من وجود المستخدم
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) return res.status(400).json({ message: "Email already exists" });
 
+    // تشفير كلمة السر إذا موجودة
     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
 
+    // تعديل userType بناء على الرابط (يمكن تغييره حسب حالتك)
     if (req.originalUrl.includes('/admin/create-manager')) {
-      userType = 3;
+      userType = 3; // مدير قسم
     }
 
     if (req.originalUrl.includes('/register-exhibitor')) {
-      userType = 2;
+      userType = 2; // عارض
     }
 
+    // إنشاء المستخدم الجديد
     const newUser = await User.create({
       name,
       email,
@@ -26,21 +30,74 @@ exports.register = async (req, res) => {
       userType
     });
 
+    // توليد التوكن مع بيانات id و userType
+    const token = jwt.sign(
+      { id: newUser.id, userType: newUser.userType },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '7d' }
+    );
+
+    // لو كان مدير قسم، ارجع رسالة خاصة
     if (userType === 3) {
       return res.status(201).json({
         message: "تم إنشاء مدير القسم بنجاح.",
-        managerId: newUser.id
+        managerId: newUser.id,
+        token // أضفنا التوكن هنا أيضاً للاتساق
       });
     }
 
-    // فقط ترجع بيانات محدودة بدون كلمة المرور
+    // للأنواع الأخرى (مثل العارض أو المستخدم العادي) ارجع بيانات المستخدم والتوكن
     const { id } = newUser;
-    res.status(201).json({ message: "User registered successfully", user: { id, name, email, userType } });
+    res.status(201).json({
+      message: "User registered successfully",
+      user: { id, name, email, userType },
+      token
+    });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
+// exports.register = async (req, res) => {
+//   let { name, email, password, userType } = req.body;
+
+//   try {
+//     const existingUser = await User.findOne({ where: { email } });
+//     if (existingUser) return res.status(400).json({ message: "Email already exists" });
+
+//     const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+
+//     if (req.originalUrl.includes('/admin/create-manager')) {
+//       userType = 3;
+//     }
+
+//     if (req.originalUrl.includes('/register-exhibitor')) {
+//       userType = 2;
+//     }
+
+//     const newUser = await User.create({
+//       name,
+//       email,
+//       password: hashedPassword,
+//       userType
+//     });
+
+//     if (userType === 3) {
+//       return res.status(201).json({
+//         message: "تم إنشاء مدير القسم بنجاح.",
+//         managerId: newUser.id
+//       });
+//     }
+
+//     // فقط ترجع بيانات محدودة بدون كلمة المرور
+//     const { id } = newUser;
+//     res.status(201).json({ message: "User registered successfully", user: { id, name, email, userType } });
+
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
 
 
  exports.login = async (req, res) => {
