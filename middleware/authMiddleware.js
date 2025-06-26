@@ -77,3 +77,10 @@ exports.verifyVisitor = async (req, res, next) => {
     return res.status(400).json({ message: "Invalid token." });
   }
 };
+
+module.exports = (req, res, next) => {
+  if (req.user.userType !== 1) {
+    return res.status(403).json({ message: "🚫 صلاحية الدخول مخصصة للزوار فقط." });
+  }
+  next();
+};
