@@ -1,9 +1,87 @@
 
+// const jwt = require('jsonwebtoken');
+// const User = require('../models/User');
+
+// // ✅ ميدل وير التحقق من التوكن وتحديد المستخدم
+// exports.verifyToken = async (req, res, next) => {
+//   let token = req.headers.authorization;
+
+//   if (!token || !token.startsWith('Bearer ')) {
+//     return res.status(401).json({ message: 'Access denied. No token provided.' });
+//   }
+
+//   try {
+//     token = token.split(' ')[1];
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const user = await User.findByPk(decoded.id);
+
+//     if (!user) return res.status(401).json({ message: 'User not found.' });
+
+//     req.user = user;
+//     next();
+//   } catch (error) {
+//     res.status(401).json({ message: 'Invalid or expired token.' });
+//   }
+// };
+
+// // ✅ تفويض صلاحيات بناءً على userType
+// exports.authorize = (...allowedTypes) => {
+//   return (req, res, next) => {
+//     if (!allowedTypes.includes(req.user.userType)) {
+//       return res.status(403).json({ message: 'You do not have permission to access this route.' });
+//     }
+//     next();
+//   };
+// };
+
+// // ✅ تحقق خاص بالعارض فقط
+// exports.verifyExhibitor = async (req, res, next) => {
+//   try {
+//     const token = req.headers.authorization?.split(" ")[1];
+//     if (!token) {
+//       return res.status(401).json({ message: "Access denied. No token provided." });
+//     }
+
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const user = await User.findByPk(decoded.id);
+
+//     if (!user || user.userType !== 2) {
+//       return res.status(403).json({ message: "Access denied. Not an exhibitor." });
+//     }
+
+//     req.user = user;
+//     next();
+//   } catch (err) {
+//     return res.status(400).json({ message: "Invalid token." });
+//   }
+// };
+
+// // ✅ middleware للتحقق من أن المستخدم زائر فقط (userType = 1)
+// exports.verifyVisitor = async (req, res, next) => {
+//   try {
+//     const token = req.headers.authorization?.split(" ")[1];
+//     if (!token) {
+//       return res.status(401).json({ message: "Access denied. No token provided." });
+//     }
+
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     const user = await User.findByPk(decoded.id);
+
+//     if (!user || user.userType !== 1) {
+//       return res.status(403).json({ message: "Access denied. Not a visitor." });
+//     }
+
+//     req.user = user;
+//     next();
+//   } catch (err) {
+//     return res.status(400).json({ message: "Invalid token." });
+//   }
+// };
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // ✅ ميدل وير التحقق من التوكن وتحديد المستخدم
-exports.verifyToken = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   let token = req.headers.authorization;
 
   if (!token || !token.startsWith('Bearer ')) {
@@ -25,7 +103,7 @@ exports.verifyToken = async (req, res, next) => {
 };
 
 // ✅ تفويض صلاحيات بناءً على userType
-exports.authorize = (...allowedTypes) => {
+const authorize = (...allowedTypes) => {
   return (req, res, next) => {
     if (!allowedTypes.includes(req.user.userType)) {
       return res.status(403).json({ message: 'You do not have permission to access this route.' });
@@ -34,8 +112,8 @@ exports.authorize = (...allowedTypes) => {
   };
 };
 
-// ✅ تحقق خاص بالعارض فقط
-exports.verifyExhibitor = async (req, res, next) => {
+// ✅ middleware للتحقق من أن المستخدم عارض فقط (userType = 2)
+const verifyExhibitor = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -57,7 +135,7 @@ exports.verifyExhibitor = async (req, res, next) => {
 };
 
 // ✅ middleware للتحقق من أن المستخدم زائر فقط (userType = 1)
-exports.verifyVisitor = async (req, res, next) => {
+const verifyVisitor = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -78,9 +156,19 @@ exports.verifyVisitor = async (req, res, next) => {
   }
 };
 
-module.exports = (req, res, next) => {
+// ✅ middleware بسيط: يسمح فقط للزوار (بعد ما يكون token تم التحقق منه مسبقًا)
+const verifyVisitorOnly = (req, res, next) => {
   if (req.user.userType !== 1) {
     return res.status(403).json({ message: "🚫 صلاحية الدخول مخصصة للزوار فقط." });
   }
   next();
+};
+
+// ✅ تصدير الدوال
+module.exports = {
+  verifyToken,
+  authorize,
+  verifyExhibitor,
+  verifyVisitor,
+  verifyVisitorOnly
 };
