@@ -5,7 +5,7 @@ const User = require('../models/User');
 const verifyToken = async (req, res, next) => {
   let token = req.headers.authorization;
 
-  if (!token  !token.startsWith('Bearer ')) {
+  if (!token || !token.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Access denied. No token provided.' });
   }
 
@@ -44,7 +44,7 @@ const verifyExhibitor = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findByPk(decoded.id);
 
-    if (!user  user.userType !== 2) {
+    if (!user || user.userType !== 2) {
       return res.status(403).json({ message: "Access denied. Not an exhibitor." });
     }
 
