@@ -7,13 +7,13 @@ const Department = require('../models/Department');
 
 
 exports.createRequest = async (req, res) => {
-  const { exhibitionName, departmentId, sectionId, contactPhone, notes } = req.body;
+  const { exhibitionName, departmentId, contactPhone, notes } = req.body;
   const userId = req.user.id;
 
   try {
     // تأكد أنه لا يوجد طلب سابق بنفس القسم لم يتم معالجته
     const existing = await ExhibitorRequest.findOne({
-      where: { userId, sectionId, status: 'waiting-approval' }
+      where: { userId, status: 'waiting-approval' }
     });
 
     if (existing) {
@@ -24,7 +24,6 @@ exports.createRequest = async (req, res) => {
       userId,
       exhibitionName,
       departmentId,
-      sectionId,
       contactPhone,
       notes,
       status: 'waiting-approval',
@@ -102,13 +101,16 @@ exports.payFinal = async (req, res) => {
     request.status = 'waiting-approval';
     request.finalPaymentDate = new Date();
 
+    // البحث فقط عن جناح موجود مرتبط بالعارض
     const existingSection = await Section.findOne({ where: { exhibitor_id: userId } });
 
     if (!existingSection) {
       await Section.create({
         name: `جناح ${request.exhibitionName}`,
-        departments_id: request.departmentId,
+        // يمكنك إزالة departments_id أو تعديله حسب بنية جدول Section لديك
+        departments_id: request.departmentId,  // إن كنت تريد الاحتفاظ به
         exhibitor_id: userId,
+        exhibitorRequestId: request.id,  // ربط الجناح بطلب العارض
       });
 
       request.wingAssigned = true;
@@ -127,6 +129,7 @@ exports.payFinal = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 exports.addProduct = async (req, res) => {
   const { productName, description, price, imageUrl } = req.body;
