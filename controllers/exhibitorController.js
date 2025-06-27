@@ -10,13 +10,13 @@ exports.createRequest = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const existing = await ExhibitorRequest.findOne({ 
-      where: { userId },
-      order: [['createdAt', 'DESC']]
+    // تأكد أنه لا يوجد طلب سابق بنفس القسم لم يتم معالجته
+    const existing = await ExhibitorRequest.findOne({
+      where: { userId, status: 'waiting-approval' }
     });
 
-    if (existing && existing.status !== 'rejected') {
-      return res.status(400).json({ message: "لديك طلب جاري بالفعل" });
+    if (existing) {
+      return res.status(400).json({ message: '❗️لديك طلب سابق قيد المعالجة لهذا القسم.' });
     }
 
     const newRequest = await ExhibitorRequest.create({
@@ -25,21 +25,21 @@ exports.createRequest = async (req, res) => {
       departmentId,
       contactPhone,
       notes,
-      status: 'waiting-approval', // القيمة الافتراضية صراحة هنا حسب الجدول
-      paymentStatus: 'unpaid',
-      finalPaymentStatus: 'unpaid',
-      wingAssigned: false,
-      finalPaymentDate: new Date() // مطلوب في الجدول و NOT NULL
+      status: 'waiting-approval',
+      paymentStatus: 'paid' // ⇦ دفع أولي (رسوم التقديم)
     });
 
     res.status(201).json({
-      message: "تم إرسال الطلب بنجاح",
+      message: '✅ تم إرسال الطلب بنجاح. سيتم مراجعته قريبًا.',
       request: newRequest
     });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('❌ Error in createRequest:', error);
+    res.status(500).json({ message: 'حدث خطأ أثناء إرسال الطلب.' });
   }
 };
+
 
 exports.payInitial = async (req, res) => {
   const userId = req.user.id;
@@ -100,13 +100,16 @@ exports.payFinal = async (req, res) => {
     request.status = 'waiting-approval';
     request.finalPaymentDate = new Date();
 
+    // البحث فقط عن جناح موجود مرتبط بالعارض
     const existingSection = await Section.findOne({ where: { exhibitor_id: userId } });
 
     if (!existingSection) {
       await Section.create({
         name:` جناح ${request.exhibitionName}`,
-        departments_id: request.departmentId,
+        // يمكنك إزالة departments_id أو تعديله حسب بنية جدول Section لديك
+        departments_id: request.departmentId,  // إن كنت تريد الاحتفاظ به
         exhibitor_id: userId,
+        exhibitorRequestId: request.id,  // ربط الجناح بطلب العارض
       });
 
       request.wingAssigned = true;
@@ -126,10 +129,10 @@ exports.payFinal = async (req, res) => {
   }
 };
 
-exports.addProduct = async (req, res) => {
-  const { productName, description, price, imageUrl } = req.body;
-  const userId = req.user.id;
 
+exports.addProduct = async (req, res) => {
+  const { productName, description, price } = req.body;
+  const userId = req.user.id;
   try {
     const section = await Section.findOne({ where: { exhibitor_id: userId } });
     if (!section) {
@@ -143,6 +146,7 @@ exports.addProduct = async (req, res) => {
       exhibitorId: userId,
       sectionId: section.id
     });
+
     res.status(201).json({ message: 'تم إضافة المنتج بنجاح', product });
   } catch (err) {
     res.status(500).json({ error: 'حدث خطأ أثناء إضافة المنتج' });

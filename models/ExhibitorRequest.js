@@ -33,10 +33,6 @@ ExhibitorRequest.init({
     type: DataTypes.TEXT,
     allowNull: true
   },
-  sectionId: {
-    type: DataTypes.INTEGER,
-    allowNull: false
-  },
   finalPaymentDate: {
     type: DataTypes.DATE,
     allowNull: true
