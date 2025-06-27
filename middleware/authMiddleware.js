@@ -2,10 +2,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // ✅ ميدل وير التحقق من التوكن وتحديد المستخدم
-exports.verifyToken = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   let token = req.headers.authorization;
 
-  if (!token || !token.startsWith('Bearer ')) {
+  if (!token  !token.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Access denied. No token provided.' });
   }
 
@@ -24,7 +24,7 @@ exports.verifyToken = async (req, res, next) => {
 };
 
 // ✅ تفويض صلاحيات بناءً على userType
-exports.authorize = (...allowedTypes) => {
+const authorize = (...allowedTypes) => {
   return (req, res, next) => {
     if (!allowedTypes.includes(req.user.userType)) {
       return res.status(403).json({ message: 'You do not have permission to access this route.' });
@@ -33,8 +33,8 @@ exports.authorize = (...allowedTypes) => {
   };
 };
 
-// ✅ تحقق خاص بالعارض فقط
-exports.verifyExhibitor = async (req, res, next) => {
+// ✅ middleware للتحقق من أن المستخدم عارض فقط (userType = 2)
+const verifyExhibitor = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -44,7 +44,7 @@ exports.verifyExhibitor = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findByPk(decoded.id);
 
-    if (!user || user.userType !== 2) {
+    if (!user  user.userType !== 2) {
       return res.status(403).json({ message: "Access denied. Not an exhibitor." });
     }
 
@@ -56,7 +56,7 @@ exports.verifyExhibitor = async (req, res, next) => {
 };
 
 // ✅ middleware للتحقق من أن المستخدم زائر فقط (userType = 1)
-exports.verifyVisitor = async (req, res, next) => {
+const verifyVisitor = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -75,4 +75,21 @@ exports.verifyVisitor = async (req, res, next) => {
   } catch (err) {
     return res.status(400).json({ message: "Invalid token." });
   }
+};
+
+// ✅ middleware بسيط: يسمح فقط للزوار (بعد ما يكون token تم التحقق منه مسبقًا)
+const verifyVisitorOnly = (req, res, next) => {
+  if (req.user.userType !== 1) {
+    return res.status(403).json({ message: "🚫 صلاحية الدخول مخصصة للزوار فقط." });
+  }
+  next();
+};
+
+// ✅ تصدير الدوال
+module.exports = {
+  verifyToken,
+  authorize,
+  verifyExhibitor,
+  verifyVisitor,
+  verifyVisitorOnly
 };
