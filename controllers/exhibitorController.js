@@ -7,40 +7,41 @@ const Department = require('../models/Department');
 
 
 exports.createRequest = async (req, res) => {
-  const { exhibitionName, departmentId, contactPhone, notes } = req.body;
+  const { exhibitionName, departmentId, sectionId, contactPhone, notes } = req.body;
   const userId = req.user.id;
 
   try {
-    const existing = await ExhibitorRequest.findOne({ 
-      where: { userId },
-      order: [['createdAt', 'DESC']]
+    // تأكد أنه لا يوجد طلب سابق بنفس القسم لم يتم معالجته
+    const existing = await ExhibitorRequest.findOne({
+      where: { userId, sectionId, status: 'waiting-approval' }
     });
 
-    if (existing && existing.status !== 'rejected') {
-      return res.status(400).json({ message: "لديك طلب جاري بالفعل" });
+    if (existing) {
+      return res.status(400).json({ message: '❗️لديك طلب سابق قيد المعالجة لهذا القسم.' });
     }
 
     const newRequest = await ExhibitorRequest.create({
       userId,
       exhibitionName,
       departmentId,
+      sectionId,
       contactPhone,
       notes,
-      status: 'waiting-approval', // القيمة الافتراضية صراحة هنا حسب الجدول
-      paymentStatus: 'unpaid',
-      finalPaymentStatus: 'unpaid',
-      wingAssigned: false,
-      finalPaymentDate: new Date() // مطلوب في الجدول و NOT NULL
+      status: 'waiting-approval',
+      paymentStatus: 'paid' // ⇦ دفع أولي (رسوم التقديم)
     });
 
     res.status(201).json({
-      message: "تم إرسال الطلب بنجاح",
+      message: '✅ تم إرسال الطلب بنجاح. سيتم مراجعته قريبًا.',
       request: newRequest
     });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('❌ Error in createRequest:', error);
+    res.status(500).json({ message: 'حدث خطأ أثناء إرسال الطلب.' });
   }
 };
+
 
 exports.payInitial = async (req, res) => {
   const userId = req.user.id;
