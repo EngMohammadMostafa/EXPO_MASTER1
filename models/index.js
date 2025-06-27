@@ -12,8 +12,13 @@ ExhibitorRequest.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Department.hasMany(ExhibitorRequest, { foreignKey: 'departmentId', as: 'exhibitorRequestsByDepartment' });
 ExhibitorRequest.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
 
-Section.hasMany(ExhibitorRequest, { foreignKey: 'sectionId', as: 'exhibitorRequestsBySection' });
-ExhibitorRequest.belongsTo(Section, { foreignKey: 'sectionId', as: 'requestSection' });
+// حذف العلاقة القديمة التي تعتمد على sectionId
+// Section.hasMany(ExhibitorRequest, { foreignKey: 'sectionId', as: 'exhibitorRequestsBySection' });
+// ExhibitorRequest.belongsTo(Section, { foreignKey: 'sectionId', as: 'requestSection' });
+
+// إضافة علاقة جديدة تربط Section بـ ExhibitorRequest عبر exhibitorRequestId
+Section.belongsTo(ExhibitorRequest, { foreignKey: 'exhibitorRequestId', as: 'exhibitorRequest' });
+ExhibitorRequest.hasOne(Section, { foreignKey: 'exhibitorRequestId', as: 'section' });
 
 // علاقات Product
 User.hasMany(Product, { foreignKey: 'exhibitorId', as: 'products' });
@@ -36,5 +41,5 @@ module.exports = {
   Section,
   ExhibitorRequest,
   Product,
-   Ticket
+  Ticket
 };
