@@ -132,7 +132,7 @@ exports.payFinal = async (req, res) => {
 
 
 exports.addProduct = async (req, res) => {
-  const { productName, description, price, imageUrl } = req.body;
+  const { productName, description, price } = req.body;
   const userId = req.user.id;
 
   try {
